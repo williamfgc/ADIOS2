@@ -46,16 +46,47 @@ done
 
 module purge
 COMP_ID=GCC
-COMP_VER=$(gcc --version | head -1 | awk '{print $3}')
 MPI_ID=NoMPI
+export CC=gcc CXX=g++ FC=gfortran
 
-export CC=$(which gcc) CXX=$(which g++) FC=$(which gfortran)
+COMP_VER=$(gcc --version | head -1 | awk '{print $3}')
 echo "Building ${COMP_ID}-${COMP_VER} ${MPI_ID}"
 LOGBASE=${BASEDIR}/../Logs/${COMP_ID}-${COMP_VER}_${MPI_ID}
-ctest -DCOMP_ID=${COMP_ID} -DCOMP_VER=${COMP_VER} -DMPI_ID=${MPI_ID} \
+ctest \
+  -DCOMP_ID=${COMP_ID} -DCOMP_VER=${COMP_VER} -DMPI_ID=${MPI_ID} \
+  -S ${BASEDIR}/aaargh.cmake -VV 1>${LOGBASE}.out 2>${LOGBASE}.err
+
+COMP_VER=$(scl enable devtoolset-3 -- gcc --version | head -1 | awk '{print $3}')
+echo "Building ${COMP_ID}-${COMP_VER} ${MPI_ID}"
+LOGBASE=${BASEDIR}/../Logs/${COMP_ID}-${COMP_VER}_${MPI_ID}
+scl enable devtoolset-3 -- ctest \
+  -DCOMP_ID=${COMP_ID} -DCOMP_VER=${COMP_VER} -DMPI_ID=${MPI_ID} \
+  -S ${BASEDIR}/aaargh.cmake -VV 1>${LOGBASE}.out 2>${LOGBASE}.err
+
+COMP_VER=$(scl enable devtoolset-4 -- gcc --version | head -1 | awk '{print $3}')
+echo "Building ${COMP_ID}-${COMP_VER} ${MPI_ID}"
+LOGBASE=${BASEDIR}/../Logs/${COMP_ID}-${COMP_VER}_${MPI_ID}
+scl enable devtoolset-4 -- ctest \
+  -DCOMP_ID=${COMP_ID} -DCOMP_VER=${COMP_VER} -DMPI_ID=${MPI_ID} \
+  -S ${BASEDIR}/aaargh.cmake -VV 1>${LOGBASE}.out 2>${LOGBASE}.err
+
+COMP_VER=$(scl enable devtoolset-6 -- gcc --version | head -1 | awk '{print $3}')
+echo "Building ${COMP_ID}-${COMP_VER} ${MPI_ID}"
+LOGBASE=${BASEDIR}/../Logs/${COMP_ID}-${COMP_VER}_${MPI_ID}
+scl enable devtoolset-6 -- ctest \
+  -DCOMP_ID=${COMP_ID} -DCOMP_VER=${COMP_VER} -DMPI_ID=${MPI_ID} \
   -S ${BASEDIR}/aaargh.cmake -VV 1>${LOGBASE}.out 2>${LOGBASE}.err
 
 echo "Building ${COMP_ID}-${COMP_VER} ${MPI_ID} ClangTidy"
 LOGBASE=${BASEDIR}/../Logs/${COMP_ID}-${COMP_VER}_${MPI_ID}_ClangTidy
 ctest -DCOMP_ID=${COMP_ID} -DCOMP_VER=${COMP_VER} -DMPI_ID=${MPI_ID} \
   -S ${BASEDIR}/aaargh_clang_tidy.cmake -VV 1>${LOGBASE}.out 2>${LOGBASE}.err
+
+export CFLAGS="-fprofile-arcs -ftest-coverage"
+export CXXFLAGS="-fprofile-arcs -ftest-coverage"
+COMP_VER=$(gcc --version | head -1 | awk '{print $3}')
+echo "Building ${COMP_ID}-${COMP_VER} ${MPI_ID} Debug"
+LOGBASE=${BASEDIR}/../Logs/${COMP_ID}-${COMP_VER}_${MPI_ID}
+ctest \
+  -DCOMP_ID=${COMP_ID} -DCOMP_VER=${COMP_VER} -DMPI_ID=${MPI_ID} \
+  -S ${BASEDIR}/aaargh_memcheck_coverage.cmake -VV 1>${LOGBASE}.out 2>${LOGBASE}.err
