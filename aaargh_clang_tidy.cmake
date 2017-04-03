@@ -14,8 +14,8 @@ else()
 endif()
 
 set(dashboard_cache "
-CMAKE_C_CLANG_TIDY:FILEPATH=clang-tidy
-CMAKE_CXX_CLANG_TIDY:FILEPATH=clang-tidy
+CMAKE_C_CLANG_TIDY:FILEPATH=/opt/clang/3.8.1/bin/clang-tidy
+CMAKE_CXX_CLANG_TIDY:FILEPATH=/opt/clang/3.8.1/bin/clang-tidy
 CMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON
 
 ${MPI_CACHE}
