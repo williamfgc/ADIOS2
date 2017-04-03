@@ -57,9 +57,12 @@
 
 set(CTEST_PROJECT_NAME "ADIOS")
 set(CTEST_DROP_SITE "open.cdash.org")
-set(dashboard_git_url "https://github.com/ornladios/ADIOS2.git")
-set(dashboard_git_branch master)
-
+if(NOT dashboard_git_url)
+  set(dashboard_git_url "https://github.com/ornladios/ADIOS2.git")
+endif()
+if(NOT dashboard_git_branch)
+  set(dashboard_git_branch master)
+endif()
 if(NOT dashboard_root_name)
   set(dashboard_root_name "Builds/My Tests")
 endif()
