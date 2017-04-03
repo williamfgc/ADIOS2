@@ -86,7 +86,7 @@ export CFLAGS="-fprofile-arcs -ftest-coverage"
 export CXXFLAGS="-fprofile-arcs -ftest-coverage"
 COMP_VER=$(gcc --version | head -1 | awk '{print $3}')
 echo "Building ${COMP_ID}-${COMP_VER} ${MPI_ID} Debug"
-LOGBASE=${BASEDIR}/../Logs/${COMP_ID}-${COMP_VER}_${MPI_ID}
+LOGBASE=${BASEDIR}/../Logs/${COMP_ID}-${COMP_VER}_${MPI_ID}_Debug
 ctest \
   -DCOMP_ID=${COMP_ID} -DCOMP_VER=${COMP_VER} -DMPI_ID=${MPI_ID} \
   -S ${BASEDIR}/aaargh_memcheck_coverage.cmake -VV 1>${LOGBASE}.out 2>${LOGBASE}.err
