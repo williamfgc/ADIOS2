@@ -33,6 +33,16 @@ elseif(ADIOS2_USE_ZFP)
   set(ADIOS2_HAVE_ZFP TRUE)
 endif()
 
+# VTKm
+if(ADIOS2_USE_VTKm STREQUAL AUTO)
+  find_package(VTKm)
+  if(VTKm_FOUND)
+    set(ADIOS2_HAVE_VTKm TRUE)
+  endif()
+elseif(ADIOS2_USE_VTKm)
+  set(ADIOS2_HAVE_VTKm TRUE)
+endif()
+
 # MPI
 if(ADIOS2_USE_MPI STREQUAL AUTO)
   find_package(MPI COMPONENTS C)

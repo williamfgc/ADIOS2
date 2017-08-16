@@ -154,6 +154,10 @@ function(GenerateADIOSPackageConfig)
       list(APPEND ADIOS2_CXX_LIBS ${ZFP_LIBRARIES})
       list(APPEND ADIOS2_CXX_INCS ${ZFP_INCLUDE_DIRS})
     endif()
+    if(ADIOS2_HAVE_VTKm)
+      list(APPEND ADIOS2_CXX_LIBS ${VTKm_LIBRARIES})
+      list(APPEND ADIOS2_CXX_INCS ${VTKm_INCLUDE_DIRS})
+    endif()
     if(ADIOS2_HAVE_ZeroMQ)
       install(FILES cmake/FindZeroMQ.cmake
         DESTINATION ${CMAKE_INSTALL_CMAKEDIR}/Modules

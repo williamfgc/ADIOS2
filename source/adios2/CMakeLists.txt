@@ -41,10 +41,7 @@ add_library(adios2
   toolkit/transport/file/FilePointer.cpp
   toolkit/transport/file/FileStream.cpp
   
-  toolkit/transportman/TransportMan.cpp
-
-  toolkit/analytics/vis/VisVTKm.cpp
-  
+  toolkit/transportman/TransportMan.cpp  
 )
 target_include_directories(adios2
   PUBLIC
@@ -83,6 +80,16 @@ if(ADIOS2_HAVE_ZFP)
   find_package(ZFP REQUIRED)
   target_sources(adios2 PRIVATE transform/compress/CompressZfp.cpp)
   target_link_libraries(adios2 PRIVATE zfp::zfp)
+endif()
+
+if(ADIOS2_HAVE_VTKm)
+#message(STATUS "Searching for VTKM")
+  find_package (VTKm REQUIRED OPTIONAL_COMPONENTS Serial OpenGL Rendering TBB CUDA)
+#message(STATUS "Found VTKm Include Dirs: ${VTKm_INCLUDE_DIRS}")
+#message(STATUS "path ${EGL_opengl_LIBRARY}")
+  #include_directories(${VTKm_INCLUDE_DIRS})
+  target_sources(adios2 PRIVATE toolkit/analytics/vis/VisVTKm.cpp)
+  target_link_libraries(adios2 PRIVATE vtkm)
 endif()
 
 if(ADIOS2_HAVE_MPI)

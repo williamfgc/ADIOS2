@@ -22,7 +22,12 @@ if(NOT @BUILD_SHARED_LIBS@)
   if(ADIOS2_HAVE_ZFP)
     find_dependency(ZFP)
   endif()
-
+  
+  set(ADIOS2_HAVE_VTKm @ADIOS2_HAVE_VTKm@)
+  if(ADIOS2_HAVE_VTKm)
+    find_dependency(VTKm)
+  endif()
+  
   set(ADIOS2_HAVE_ZeroMQ @ADIOS2_HAVE_ZeroMQ@)
   if(ADIOS2_HAVE_ZeroMQ)
     find_dependency(ZeroMQ)
