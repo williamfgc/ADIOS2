@@ -18,7 +18,7 @@ public:
 
     virtual ~VisVTKm();
 
-private:
+
 };
 
 } // end namespace adios2
