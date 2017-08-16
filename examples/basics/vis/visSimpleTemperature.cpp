@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
         /** global array : name, { shape (total) }, { start (local) }, { count
          * (local) }, all are constant dimensions */
         adios2::Variable<float> &bpTemperature = bpIO.DefineVariable<float>(
-            "bpFloats", {size * Nx}, {rank * Nx}, {Nx}, adios2::ConstantDims);
+            "variableName", {size * Nx}, {rank * Nx}, {Nx}, adios2::ConstantDims);
 
         bpTemperature.AddTransform(visTransform,
                                    {{"X1", "0"}, {"DeltaX", "1"}});

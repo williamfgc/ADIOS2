@@ -30,6 +30,8 @@
 #include "adios2/transform/compress/CompressZfp.h"
 #endif
 
+#include "adios2/transform/vis/Vis.h"
+
 namespace adios2
 {
 
@@ -134,6 +136,12 @@ Transform &ADIOS::GetTransform(const std::string transform)
             "ERROR: this version of ADIOS2 didn't compile with "
             "zfp library, in call to GetTransport\n");
 #endif
+    }
+    else if (transform == "vis" || transform == "Vis")
+    {
+        auto itPair = m_Transforms.emplace("vis",
+                                           std::make_shared<adios2::transform::VisVTKm>(m_DebugMode));
+        return *itPair.first->second;
     }
     else
     {

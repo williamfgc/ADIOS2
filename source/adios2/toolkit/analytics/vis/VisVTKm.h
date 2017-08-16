@@ -8,6 +8,8 @@
 #ifndef ADIOS2_TOOLKIT_ANALYTICS_VIS_VISVTKM_H_
 #define ADIOS2_TOOLKIT_ANALYTICS_VIS_VISVTKM_H_
 
+#include <set>
+#include <vector>
 #include "adios2/core/IO.h"
 
 #include "adios2/ADIOSTypes.h"
@@ -22,9 +24,10 @@ public:
 
     bool m_DoRendering = true;
 
+    VisVTKm() {}
     VisVTKm(const bool debugMode);
 
-    virtual ~VisVTKm();
+    virtual ~VisVTKm() {}
 
     void InitParameters(const Params &parameters);
 
@@ -33,7 +36,7 @@ public:
     {
         for (auto &transformInfo : variable.m_TransformsInfo)
         {
-            if (transformInfo.Operator.m_Type == "Vis")
+            if (transformInfo.Operator.m_Library == "vis")
             {
                 m_VariablesNames.insert(variable.m_Name);
             }

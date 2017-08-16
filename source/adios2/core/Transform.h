@@ -16,6 +16,7 @@
 #include <vector>
 /// \endcond
 
+#include <iostream>
 #include "adios2/ADIOSTypes.h"
 
 namespace adios2
@@ -91,7 +92,11 @@ public:
 
     virtual bool Render1DStructured(const void *field,
                                     const size_t fieldElements, const double x0,
-                                    double double deltaX);
+                                    double deltaX)
+        {
+            std::cout<<__FILE__<<" "<<__LINE__<<std::endl;
+            return false;
+        }
 
 protected:
     /** true: extra exception checks, false: skip exception checks */

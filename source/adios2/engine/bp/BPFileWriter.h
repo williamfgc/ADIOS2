@@ -15,6 +15,7 @@
 #include "adios2/core/Engine.h"
 #include "adios2/toolkit/format/bp1/BP1.h"            //format::BP1Writer
 #include "adios2/toolkit/transportman/TransportMan.h" //transport::TransportsMan
+#include "adios2/toolkit/analytics/vis/VisVTKm.h"
 
 namespace adios2
 {

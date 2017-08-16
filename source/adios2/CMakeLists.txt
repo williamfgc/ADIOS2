@@ -42,6 +42,8 @@ add_library(adios2
   toolkit/transport/file/FileStream.cpp
   
   toolkit/transportman/TransportMan.cpp
+
+  toolkit/analytics/vis/VisVTKm.cpp
   
 )
 target_include_directories(adios2
