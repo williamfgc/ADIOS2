@@ -89,6 +89,10 @@ public:
                               const std::string type,
                               const Params &parameters) const;
 
+    virtual bool Render1DStructured(const void *field,
+                                    const size_t fieldElements, const double x0,
+                                    double double deltaX);
+
 protected:
     /** true: extra exception checks, false: skip exception checks */
     const bool m_DebugMode = false;

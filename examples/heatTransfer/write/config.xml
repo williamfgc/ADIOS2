@@ -13,6 +13,9 @@
             <!-- Microseconds (default), Milliseconds, Seconds, 
                  Minutes, Hours -->
             <parameter key="ProfileUnits" value="Microseconds"/>
+            
+            <!--  -->
+            <parameter key="Visualize" value="Off"/>
 
             <!-- XXKb, XXMb, or XXXGb supported, default=16Kb 
                 (applications might choose an optimal value) -->

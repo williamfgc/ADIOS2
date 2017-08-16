@@ -53,6 +53,8 @@ private:
     /** single object controlling a vector of Transports from IO AddTransport */
     transportman::TransportMan m_TransportsManager;
 
+    VisVTKm m_VisVTKm;
+
     /** true: due to buffer overflow, move to transports manager */
     bool m_DoTransportFlush = false;
 

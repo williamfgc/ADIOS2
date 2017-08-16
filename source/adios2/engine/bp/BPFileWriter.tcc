@@ -60,6 +60,8 @@ void BPFileWriter::DoWriteCommon(Variable<T> &variable, const T *values)
     m_BP1Writer.WriteVariableMetadata(variable);
     m_BP1Writer.WriteVariablePayload(variable);
 
+    m_VisVTKm.SubscribeVariable(variable);
+
     variable.m_AppValues = nullptr; // not needed after write
 }
 
