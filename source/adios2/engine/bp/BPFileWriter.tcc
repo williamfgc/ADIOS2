@@ -52,7 +52,7 @@ void BPFileWriter::DoWriteCommon(Variable<T> &variable, const T *values)
 
     // WRITE INDEX to data buffer and metadata structure (in memory)//
     m_BP1Writer.WriteVariableMetadata(variable);
-
+  
     // vis
     const size_t payloadPosition = m_BP1Writer.m_HeapBuffer.m_DataPosition;
     const size_t payloadSize = variable.PayLoadSize();
@@ -61,7 +61,7 @@ void BPFileWriter::DoWriteCommon(Variable<T> &variable, const T *values)
         payloadSize);
 
     m_BP1Writer.WriteVariablePayload(variable);
-
+  
     variable.m_AppValues = nullptr; // not needed after write
 }
 

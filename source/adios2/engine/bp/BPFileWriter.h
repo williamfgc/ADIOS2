@@ -15,7 +15,10 @@
 #include "adios2/core/Engine.h"
 #include "adios2/toolkit/format/bp1/BP1.h"            //format::BP1Writer
 #include "adios2/toolkit/transportman/TransportMan.h" //transport::TransportsMan
+#ifdef ADIOS2_USE_VTKm
 #include "adios2/toolkit/analytics/vis/VisVTKm.h"
+#endif
+
 
 namespace adios2
 {
@@ -54,7 +57,9 @@ private:
     /** single object controlling a vector of Transports from IO AddTransport */
     transportman::TransportMan m_TransportsManager;
 
+#ifdef ADIOS2_USE_VTKm
     VisVTKm m_VisVTKm;
+#endif
 
     /** true: due to buffer overflow, move to transports manager */
     bool m_DoTransportFlush = false;

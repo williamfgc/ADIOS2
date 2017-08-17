@@ -6,7 +6,15 @@
  */
 
 #include "VisVTKm.h"
+
+#ifndef VTKM_DEVICE_ADAPTER
+#define VTKM_DEVICE_ADAPTER VTKM_DEVICE_ADAPTER_SERIAL
+#endif
+
 #include <iostream>
+#include <vtkm/Math.h>
+#include <vtkm/cont/DataSetBuilderUniform.h>
+#include <vtkm/cont/DataSet.h>
 
 namespace adios2
 {
@@ -40,6 +48,12 @@ bool VisVTKm::RenderAllVariables()
             }
         }
     }
+
+    vtkm::Id3 dims(10,10,10);
+    vtkm::cont::DataSetBuilderUniform dsb;
+    vtkm::cont::DataSet ds = dsb.Create(dims);
+    ds.PrintSummary(std::cout);
+    std::cout<<dims<<std::endl;
 
     return true;
 }
