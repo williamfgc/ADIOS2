@@ -15,7 +15,8 @@
 #include "adios2/core/Engine.h"
 #include "adios2/toolkit/format/bp1/BP1.h"            //format::BP1Writer
 #include "adios2/toolkit/transportman/TransportMan.h" //transport::TransportsMan
-#ifdef ADIOS2_USE_VTKm
+
+#ifdef ADIOS2_HAVE_VTKm
 #include "adios2/toolkit/analytics/vis/VisVTKm.h"
 #endif
 
@@ -57,7 +58,7 @@ private:
     /** single object controlling a vector of Transports from IO AddTransport */
     transportman::TransportMan m_TransportsManager;
 
-#ifdef ADIOS2_USE_VTKm
+#ifdef ADIOS2_HAVE_VTKm
     VisVTKm m_VisVTKm;
 #endif
 
