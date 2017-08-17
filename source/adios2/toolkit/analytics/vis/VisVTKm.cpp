@@ -6,7 +6,6 @@
  */
 
 #include "VisVTKm.h"
-
 #include <iostream>
 
 

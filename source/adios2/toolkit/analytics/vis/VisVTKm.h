@@ -36,6 +36,7 @@ public:
     {
         for (auto &transformInfo : variable.m_TransformsInfo)
         {
+
             if (transformInfo.Operator.m_Library == "Vis")
             {
                 m_VariablesNames.insert(variable.m_Name);
