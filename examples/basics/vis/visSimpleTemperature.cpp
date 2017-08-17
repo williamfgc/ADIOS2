@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
         /** ADIOS class factory of IO class objects, DebugON is recommended */
         adios2::ADIOS adios(MPI_COMM_WORLD, adios2::DebugON);
 
-        auto &visTransform = adios.GetTransform("Vis");
+        auto &visTransform = adios.GetTransform("Vis", {{"key", "value"}});
 
         /*** IO class object: settings and factory of Settings: Variables,
          * Parameters, Transports, and Execution: Engines */
@@ -43,11 +43,11 @@ int main(int argc, char *argv[])
 
         /** global array : name, { shape (total) }, { start (local) }, { count
          * (local) }, all are constant dimensions */
-        adios2::Variable<float> &bpTemperature = bpIO.DefineVariable<float>(
-            "variableName", {size * Nx}, {rank * Nx}, {Nx}, adios2::ConstantDims);
+        adios2::Variable<float> &bpTemperature =
+            bpIO.DefineVariable<float>("variableName", {size * Nx}, {rank * Nx},
+                                       {Nx}, adios2::ConstantDims);
 
-        bpTemperature.AddTransform(visTransform,
-                                   {{"X1", "0"}, {"DeltaX", "1"}});
+        bpTemperature.AddTransform(visTransform);
 
         /** Engine derived class, spawned to start IO operations */
         auto bpWriter = bpIO.Open("vis.bp", adios2::OpenMode::Write);

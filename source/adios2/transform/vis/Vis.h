@@ -18,10 +18,15 @@ namespace transform
 class VisVTKm : public Transform
 {
 public:
-//    VisVTKm() {}
-    VisVTKm(bool debugMode) : Transform("vis", debugMode) {}
-};
+    VisVTKm(const bool debugMode) : Transform("Vis", debugMode) {}
 
+    VisVTKm(const Params &parameters, const bool debugMode)
+    : Transform("Vis", parameters, debugMode)
+    {
+    }
+
+    ~VisVTKm() = default;
+};
 }
 }
 

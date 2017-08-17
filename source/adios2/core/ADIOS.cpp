@@ -102,7 +102,8 @@ IO &ADIOS::GetIO(const std::string name)
     return itIO->second;
 }
 
-Transform &ADIOS::GetTransform(const std::string transform)
+Transform &ADIOS::GetTransform(const std::string transform,
+                               const Params &parameters)
 {
     auto itTransform = m_Transforms.find(transform);
 
@@ -139,8 +140,8 @@ Transform &ADIOS::GetTransform(const std::string transform)
     }
     else if (transform == "vis" || transform == "Vis")
     {
-        auto itPair = m_Transforms.emplace("vis",
-                                           std::make_shared<adios2::transform::VisVTKm>(m_DebugMode));
+        auto itPair = m_Transforms.emplace(
+            "vis", std::make_shared<adios2::transform::VisVTKm>(m_DebugMode));
         return *itPair.first->second;
     }
     else

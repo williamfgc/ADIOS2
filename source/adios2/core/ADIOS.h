@@ -96,7 +96,8 @@ public:
      */
     IO &GetIO(const std::string name);
 
-    Transform &GetTransform(const std::string transform);
+    Transform &GetTransform(const std::string transform,
+                            const Params &parameters = Params());
 
 private:
     /** XML File to be read containing configuration information */

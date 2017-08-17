@@ -34,12 +34,6 @@ void BPFileWriter::DoWriteCommon(Variable<T> &variable, const T *values)
 
     const size_t newSize = m_BP1Writer.m_HeapBuffer.GetDataSize();
 
-    //    if (resizeResult == format::BP1Base::ResizeResult::Success)
-    //    {
-    //        std::cout << "Old buffer size: " << oldSize << "\n";
-    //        std::cout << "New buffer size: " << newSize << "\n";
-    //    }
-
     if (resizeResult == format::BP1Base::ResizeResult::Flush)
     {
         m_BP1Writer.Flush();
@@ -58,11 +52,17 @@ void BPFileWriter::DoWriteCommon(Variable<T> &variable, const T *values)
 
     // WRITE INDEX to data buffer and metadata structure (in memory)//
     m_BP1Writer.WriteVariableMetadata(variable);
-    m_BP1Writer.WriteVariablePayload(variable);
 
-    m_VisVTKm.SubscribeVariable(variable);
+    // vis
+    const size_t payloadPosition = m_BP1Writer.m_HeapBuffer.m_DataPosition;
+    const size_t payloadSize = variable.PayLoadSize();
+    m_VisVTKm.SubscribeVariable(
+        variable, &m_BP1Writer.m_HeapBuffer.m_Data[payloadPosition],
+        payloadSize);
+
+    m_BP1Writer.WriteVariablePayload(variable);
 
     variable.m_AppValues = nullptr; // not needed after write
 }
 
-} // end namespace adios
+} // end namespace adios2

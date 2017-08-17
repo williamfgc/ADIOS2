@@ -48,8 +48,7 @@ ADIOS2_FOREACH_TYPE_1ARG(declare_type)
 void BPFileWriter::Advance(const float /*timeout_sec*/)
 {
     m_BP1Writer.Advance();
-
-    m_VisVTKm.RenderAllVariables(m_IO);
+    m_VisVTKm.RenderAllVariables();
 }
 
 void BPFileWriter::Close(const int transportIndex)

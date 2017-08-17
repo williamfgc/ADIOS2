@@ -16,8 +16,8 @@
 #include <vector>
 /// \endcond
 
-#include <iostream>
 #include "adios2/ADIOSTypes.h"
+#include <iostream>
 
 namespace adios2
 {
@@ -30,6 +30,7 @@ class Transform
 public:
     /** From derived class */
     const std::string m_Library;
+    const Params m_Parameters;
 
     /**
      * Unique base class constructor
@@ -37,6 +38,9 @@ public:
      * @param debugMode true: extra exceptions checks
      */
     Transform(const std::string library, const bool debugMode);
+
+    Transform(const std::string library, const Params &parameters,
+              const bool debugMode);
 
     virtual ~Transform() = default;
 
@@ -93,10 +97,10 @@ public:
     virtual bool Render1DStructured(const void *field,
                                     const size_t fieldElements, const double x0,
                                     double deltaX)
-        {
-            std::cout<<__FILE__<<" "<<__LINE__<<std::endl;
-            return false;
-        }
+    {
+        std::cout << __FILE__ << " " << __LINE__ << std::endl;
+        return false;
+    }
 
 protected:
     /** true: extra exception checks, false: skip exception checks */

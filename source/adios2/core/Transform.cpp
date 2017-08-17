@@ -19,6 +19,12 @@ Transform::Transform(const std::string library, const bool debugMode)
 {
 }
 
+Transform::Transform(const std::string library, const Params &parameters,
+                     const bool debugMode)
+: m_Library(library), m_Parameters(parameters), m_DebugMode(debugMode)
+{
+}
+
 size_t Transform::BufferMaxSize(const size_t sizeIn) const
 {
     if (m_DebugMode)

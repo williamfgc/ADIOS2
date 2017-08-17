@@ -10,17 +10,24 @@
 
 #include <set>
 #include <vector>
-#include "adios2/core/IO.h"
 
 #include "adios2/ADIOSTypes.h"
+#include "adios2/core/IO.h"
 
 namespace adios2
 {
 
+struct VariableInfo
+{
+    VariableBase &VisVariable;
+    const void *Data;
+    const size_t Size;
+};
+
 class VisVTKm
 {
 public:
-    std::set<std::string> m_VariablesNames;
+    std::vector<VariableInfo> m_VisVariables;
 
     bool m_DoRendering = true;
 
@@ -32,14 +39,15 @@ public:
     void InitParameters(const Params &parameters);
 
     template <class T>
-    void SubscribeVariable(Variable<T> &variable)
+    void SubscribeVariable(Variable<T> &variable, const void *data,
+                           const size_t size)
     {
         for (auto &transformInfo : variable.m_TransformsInfo)
         {
 
             if (transformInfo.Operator.m_Library == "Vis")
             {
-                m_VariablesNames.insert(variable.m_Name);
+                m_VisVariables.push_back(VariableInfo{variable, data, size});
             }
         }
     }
@@ -48,7 +56,7 @@ public:
      *
      * @return true: success, false: fails
      */
-    bool RenderAllVariables(IO &io);
+    bool RenderAllVariables();
 };
 
 } // end namespace adios2

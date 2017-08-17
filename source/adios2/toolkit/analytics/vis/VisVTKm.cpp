@@ -8,32 +8,35 @@
 #include "VisVTKm.h"
 #include <iostream>
 
-
 namespace adios2
 {
 
-bool VisVTKm::RenderAllVariables(IO &io)
+bool VisVTKm::RenderAllVariables()
 {
-    for (auto &variableName : m_VariablesNames)
+    for (auto &visVariable : m_VisVariables)
     {
-        auto *var1 = io.GetVariableBase("variableName");
-        std::cout<<var1->m_Shape.size()<<" : "<<var1->m_Shape[0]<<std::endl;
+        auto &var = visVariable.VisVariable;
+        std::cout << var.m_Shape.size() << " : " << var.m_Shape[0] << std::endl;
 
-        for( auto& transform : var1->m_TransformsInfo )
+        for (auto &transform : var.m_TransformsInfo)
         {
-            std::cout<<__LINE__<<std::endl;
-            for(auto& parameter : transform.Parameters)
+            // transform parameters
+            transform.Operator.m_Parameters;
+
+            std::cout << __LINE__ << std::endl;
+            for (auto &parameter : transform.Parameters)
             {
-                std::cout<<__LINE__<<std::endl;
-                std::cout<<parameter.first<<std::endl;
-                if( parameter.first == "X1" )
+                const std::string key(parameter.first);
+                const std::string value(parameter.second);
+
+                std::cout << parameter.first << std::endl;
+                if (key == "X1")
                 {
                     auto value = parameter.second;
-                    std::cout<<__LINE__<<std::endl;
-                    std::cout<<"Meow"<<std::endl;
-                    ///CAll VTKm magic
+                    std::cout << __LINE__ << std::endl;
+                    std::cout << "Meow" << std::endl;
+                    /// CAll VTKm magic
                 }
-                
             }
         }
     }
