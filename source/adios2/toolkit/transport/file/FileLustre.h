@@ -7,3 +7,33 @@
  *  Created on: Nov 20, 2017
  *      Author: Lipeng Wan wanl@ornl.gov
  */
+
+#ifndef ADIOS2_TOOLKIT_TRANSPORT_FILE_FILELUSTRE_H_
+#define ADIOS2_TOOLKIT_TRANSPORT_FILE_FILELUSTRE_H_
+
+#include "adios2/ADIOSConfig.h"
+#include "adios2/toolkit/transport/Transport.h"
+
+namespace adios2
+{
+namespace transport
+{
+class FileLustre : public Transport
+{
+public:
+    FileLustre(const size_t stripeSize, const size_t stripeOffset,
+               const size_t stripeCount, const size_t stripePattern,
+               MPI_Comm mpiComm, const bool debugMode);
+    ~FileLustre();
+    void Open(const std::string &name, const Mode openMode);
+
+private:
+    const size_t m_StripeSize;
+    const size_t m_StripeOffset;
+    const size_t m_StripeCount;
+    const size_t m_StripePattern;
+};
+}
+}
+
+#endif /* ADIOS2_TOOLKIT_TRANSPORT_FILE_FILELUSTRE_H_ */
