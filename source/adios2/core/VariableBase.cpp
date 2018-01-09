@@ -186,8 +186,8 @@ void VariableBase::SetStepSelection(const Box<size_t> &boxSteps)
 }
 
 // transforms related functions
-unsigned int VariableBase::AddTransform(Operator &transform,
-                                        const Params &parameters) noexcept
+unsigned int VariableBase::AddOperator(Operator &transform,
+                                       const Params &parameters) noexcept
 {
     m_OperatorsInfo.push_back(OperatorInfo{transform, parameters});
     return static_cast<unsigned int>(m_OperatorsInfo.size() - 1);

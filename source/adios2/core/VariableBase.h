@@ -40,6 +40,9 @@ public:
         Dims Sizes;
     };
 
+    /** Registered operators */
+    std::vector<OperatorInfo> m_OperatorsInfo;
+
     /** unique identifier inside Method that creates a Variable */
     const std::string m_Name;
 
@@ -61,9 +64,6 @@ public:
     bool m_ReadAsJoined = false;
     /** Global array was written as Local value, so read accordingly */
     bool m_ReadAsLocalValue = false;
-
-    /** Registered transforms */
-    std::vector<OperatorInfo> m_OperatorsInfo;
 
     size_t m_AvailableStepsStart = 1;
     size_t m_AvailableStepsCount = 0;

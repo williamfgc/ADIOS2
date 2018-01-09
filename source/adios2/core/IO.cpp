@@ -431,6 +431,17 @@ Engine &IO::Open(const std::string &name, const Mode mode,
     {
         engine = std::make_shared<PluginEngine>(*this, name, mode, mpiComm);
     }
+    else if (engineTypeLC == "bpviz")
+    {
+        if (mode == Mode::Write)
+        {
+            engine = std::make_shared<BPVizWriter>(*this, name, mode, mpiComm);
+        }
+        else if (mode == Mode::Read)
+        {
+            engine = std::make_shared<BPVizReader>(*this, name, mode, mpiComm);
+        }
+    }
     else if (engineTypeLC == "skeleton")
     {
         if (mode == Mode::Read)
