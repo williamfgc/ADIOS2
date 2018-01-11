@@ -10,6 +10,8 @@
 
 #include "TransportMan.h"
 
+#include <iostream>
+
 /// \cond EXCLUDE_FROM_DOXYGEN
 #include <set>
 /// \endcond
@@ -23,6 +25,10 @@
 
 #include "adios2/toolkit/transport/file/FileFStream.h"
 #include "adios2/toolkit/transport/file/FileStdio.h"
+
+#ifdef ADIOS2_HAVE_LUSTRE
+#include "adios2/toolkit/transport/file/FileLustre.h"
+#endif
 
 namespace adios2
 {
@@ -240,6 +246,34 @@ TransportMan::OpenFileTransport(const std::string &fileName,
         {
             transport =
                 std::make_shared<transport::FilePOSIX>(m_MPIComm, m_DebugMode);
+        }
+#endif
+#ifdef ADIOS2_HAVE_LUSTRE
+        else if (library == "Lustre")
+        {
+            auto lf_GetParam = [](const Params &parameters,
+                                  const std::string key) -> size_t {
+                auto itKey = parameters.find(key);
+                if (itKey != parameters.end())
+                {
+                    return static_cast<size_t>(std::stoul(itKey->second));
+                }
+                return 0;
+            };
+
+            size_t stripeCount = 0, stripeSize = 0, stripeOffset = 0,
+                   stripePattern = 0;
+
+            stripeCount = lf_GetParam(parameters, "StripeCount");
+            stripeSize = lf_GetParam(parameters, "StripeSize");
+            stripeOffset = lf_GetParam(parameters, "StripeOffset");
+            stripePattern = lf_GetParam(parameters, "StripePattern");
+
+            std::cout << "Make_shared FileLustre\n";
+
+            transport = std::make_shared<transport::FileLustre>(
+                stripeSize, stripeOffset, stripeCount, stripePattern, m_MPIComm,
+                m_DebugMode);
         }
 #endif
         else

@@ -25,13 +25,25 @@ public:
                const size_t stripeCount, const size_t stripePattern,
                MPI_Comm mpiComm, const bool debugMode);
     ~FileLustre();
-    void Open(const std::string &name, const Mode openMode);
+
+    void Open(const std::string &name, const Mode openMode) final;
+
+    void Write(const char *buffer, size_t size, size_t start = MaxSizeT) final;
+
+    void Read(char *buffer, size_t size, size_t start = MaxSizeT) final;
+
+    size_t GetSize() final;
+
+    void Close() final;
 
 private:
     const size_t m_StripeSize;
     const size_t m_StripeOffset;
     const size_t m_StripeCount;
     const size_t m_StripePattern;
+    int m_FileDescriptor = -1;
+
+    void CheckFile(const std::string hint) const;
 };
 }
 }

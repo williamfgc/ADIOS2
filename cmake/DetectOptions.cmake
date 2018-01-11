@@ -74,6 +74,16 @@ if(ZeroMQ_FOUND)
   set(ADIOS2_HAVE_ZeroMQ TRUE)
 endif()
 
+# Lustre
+if(ADIOS2_USE_Lustre STREQUAL AUTO)
+  find_package(Lustre)
+elseif(ADIOS2_USE_Lustre)
+  find_package(Lustre REQUIRED)
+endif()
+if(Lustre_FOUND)
+  set(ADIOS2_HAVE_Lustre TRUE)
+endif()
+
 # HDF5
 if(ADIOS2_USE_HDF5 STREQUAL AUTO)
   find_package(HDF5 COMPONENTS C)
