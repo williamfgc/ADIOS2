@@ -37,8 +37,8 @@ if(NOT Lustre_FOUND)
     )
   endif()
 
-  find_path(Lustre_INCLUDE_DIR lustreapi.h ${Lustre_INCLUDE_OPTS})
-  find_library(Lustre_LIBRARY lustre ${Lustre_LIBRARY_OPTS})
+  find_path(Lustre_INCLUDE_DIR lustre/lustreapi.h ${Lustre_INCLUDE_OPTS})
+  find_library(Lustre_LIBRARY lustreapi ${Lustre_LIBRARY_OPTS})
 
   include(FindPackageHandleStandardArgs)
   find_package_handle_standard_args(Lustre
