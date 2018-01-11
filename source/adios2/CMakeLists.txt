@@ -76,6 +76,13 @@ if(ADIOS2_HAVE_ZeroMQ)
   target_link_libraries(adios2 PRIVATE ZeroMQ::ZMQ)
 endif()
 
+if(ADIOS2_HAVE_Lustre)
+  target_sources(adios2 PRIVATE
+    toolkit/transport/file/FileLustre.cpp
+  )
+  target_link_libraries(adios2 PRIVATE lustre::lustre)
+endif()
+
 if(ADIOS2_HAVE_SST)
   add_subdirectory(toolkit/sst)
   target_sources(adios2 PRIVATE

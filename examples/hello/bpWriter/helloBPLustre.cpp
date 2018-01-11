@@ -43,8 +43,8 @@ int main(int argc, char *argv[])
         // bpIO.SetParameters({{"Threads", "4"}});
         bpIO.AddTransport("File", {{"Library", "Lustre"},
                                    {"StripeCount", "1"},
-                                   {"StripeSize", "1024"},
-                                   {"StripeOffset", "ZZ"},
+                                   {"StripeSize", "1048576"},
+                                   {"StripeOffset", "0"},
                                    {"StripePattern", "1"}});
 
         /** global array : name, { shape (total) }, { start (local) }, {
