@@ -49,8 +49,8 @@ if(NOT Lustre_FOUND)
     set(Lustre_INCLUDE_DIRS ${Lustre_INCLUDE_DIR})
     set(Lustre_LIBRARIES ${Lustre_LIBRARY})
     if(Lustre_FOUND AND NOT TARGET lustre::lustre)
-      add_library(Lustre::Lustre UNKNOWN IMPORTED)
-      set_target_properties(Lustre::Lustre PROPERTIES
+      add_library(lustre::lustre UNKNOWN IMPORTED)
+      set_target_properties(lustre::lustre PROPERTIES
         IMPORTED_LOCATION             "${Lustre_LIBRARY}"
         INTERFACE_INCLUDE_DIRECTORIES "${Lustre_INCLUDE_DIR}"
       )
