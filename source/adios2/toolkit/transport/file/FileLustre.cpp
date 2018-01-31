@@ -12,6 +12,12 @@
 #include <lustre/lustreapi.h>
 //#endif
 
+#include <fcntl.h>     // open
+#include <stddef.h>    // write output
+#include <sys/stat.h>  // open, fstat
+#include <sys/types.h> // open
+#include <unistd.h>    // write, close
+
 #include "FileLustre.h"
 
 namespace adios2
@@ -39,8 +45,9 @@ void FileLustre::Open(const std::string &name, const Mode openMode)
     case (Mode::Write):
         ProfilerStart("open");
         MkDir(m_Name);
-        const int status = llapi_file_create(m_StripeSize, m_StripeOffset,
-                                             m_StripeCount, m_StripePattern);
+        int status;
+        status = llapi_file_create(m_Name.c_str(),static_cast<long>(m_StripeSize), static_cast<int>( m_StripeOffset),
+                                             static_cast<int>(m_StripeCount), static_cast<int>(m_StripePattern));
         if (status)
         {
             throw std::runtime_error(
@@ -53,21 +60,26 @@ void FileLustre::Open(const std::string &name, const Mode openMode)
         break;
 
     case (Mode::Append):
+    {
         ProfilerStart("open");
         m_FileDescriptor = open(m_Name.c_str(), O_RDWR);
         ProfilerStop("open");
         break;
-
+    }
     case (Mode::Read):
+    {
         ProfilerStart("open");
         m_FileDescriptor = open(m_Name.c_str(), O_RDONLY);
         ProfilerStop("open");
         break;
-
+    }
     default:
+    {
         CheckFile("unknown open mode for file " + m_Name +
                   ", in call to Lustre-POSIX open");
     }
+
+    } //end switch
 
     CheckFile(
         "couldn't open file " + m_Name +
