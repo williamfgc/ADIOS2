@@ -46,7 +46,7 @@ void FileLustre::Open(const std::string &name, const Mode openMode)
         ProfilerStart("open");
         MkDir(m_Name);
         int status;
-        status = llapi_file_create(m_Name.c_str(),static_cast<long>(m_StripeSize), static_cast<int>( m_StripeOffset),
+        status = llapi_file_create(m_Name.c_str(),static_cast<unsigned long long>(m_StripeSize), static_cast<int>( m_StripeOffset),
                                              static_cast<int>(m_StripeCount), static_cast<int>(m_StripePattern));
         if (status)
         {
