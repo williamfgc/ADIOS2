@@ -1,20 +1,25 @@
 package:
-  name: adios2-openmpi
-  version: 2.5.0
+  name: adios2-mpich
+  version: 2.4.0
   #version: {{ GIT_DESCRIBE_TAG }}
 
 build:
   number: {{ GIT_DESCRIBE_NUMBER }}
   string: {{ GIT_BUILD_STR }}
+  script:
+    - mkdir build
+    - cd build
+    - cmake -DCMAKE_PREFIX_PATH="{{ PREFIX }}" {{ RECIPE_DIR }}/superbuild
+    - cmake --build -j .
 
 source:
   git_url: https://github.com/ornladios/adios2.git
-  git_rev: release_25
+  git_rev: release
 
 requirements:
   build:
     - python
-    - openmpi
+    - mpich
     - mpi4py
     - numpy
     - cmake
@@ -25,7 +30,7 @@ requirements:
     - blosc
   run:
     - python
-    - openmpi
+    - mpich
     - mpi4py
     - numpy
     - zeromq

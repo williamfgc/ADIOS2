@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.6)
-project(ADIOS2_SUPERBUILD C CXX)
+project(ADIOS2_NOMPI C CXX)
 
 include(ExternalProject)
 
@@ -21,10 +21,8 @@ ExternalProject_Add(adios2
     -DADIOS2_USE_SST=ON
     -DADIOS2_USE_DataMan=ON
     -DADIOS2_USE_ZeroMQ=ON
-    -DADIOS2_USE_HDF5=OFF
-    -DADIOS2_USE_BZip2=ON
-    -DADIOS2_USE_PNG=ON
-    -DADIOS2_USE_Blosc=ON
+    -DADIOS2_USE_HDF5=ON
+    -DADIOS2_USE_BZip2=OFF
     -DADIOS2_USE_ZFP=OFF
     -DADIOS2_USE_SZ=OFF
     -DADIOS2_USE_MGARD=OFF
