@@ -11,6 +11,7 @@
 
 from adios2NPTypes import SmallTestData
 from mpi4py import MPI
+import numpy as np
 import adios2
 
 
@@ -115,7 +116,7 @@ for key, value in ioParams.items():
 
 ioWriter.LockDefinitions()
 
-# ADIOS Engine
+# ADIOS2 Writer Engine
 writer = ioWriter.Open("npTypes.bp", adios2.Mode.Write)
 
 for i in range(0, 3):
@@ -140,106 +141,185 @@ for i in range(0, 3):
 
 writer.Close()
 
-# Start reader
+# ADIOS2 Engine reader
+data = SmallTestData()
 ioReader = adios.DeclareIO("reader")
-
 reader = ioReader.Open("npTypes.bp", adios2.Mode.Read)
 
-attrString = ioReader.InquireAttribute("attrString")
-attrI8 = ioReader.InquireAttribute("attrI8")
-attrI16 = ioReader.InquireAttribute("attrI16")
-attrI32 = ioReader.InquireAttribute("attrI32")
-attrI64 = ioReader.InquireAttribute("attrI64")
-attrU8 = ioReader.InquireAttribute("attrU8")
-attrU16 = ioReader.InquireAttribute("attrU16")
-attrU32 = ioReader.InquireAttribute("attrU32")
-attrU64 = ioReader.InquireAttribute("attrU64")
-attrR32 = ioReader.InquireAttribute("attrR32")
-attrR64 = ioReader.InquireAttribute("attrR64")
+while(reader.BeginStep() == adios2.StepStatus.OK):
+    
+    current_step = reader.CurrentStep()
+    
+    if(current_step == 0):
+    
+        attrString = ioReader.InquireAttribute("attrString")
+        attrI8 = ioReader.InquireAttribute("attrI8")
+        attrI16 = ioReader.InquireAttribute("attrI16")
+        attrI32 = ioReader.InquireAttribute("attrI32")
+        attrI64 = ioReader.InquireAttribute("attrI64")
+        attrU8 = ioReader.InquireAttribute("attrU8")
+        attrU16 = ioReader.InquireAttribute("attrU16")
+        attrU32 = ioReader.InquireAttribute("attrU32")
+        attrU64 = ioReader.InquireAttribute("attrU64")
+        attrR32 = ioReader.InquireAttribute("attrR32")
+        attrR64 = ioReader.InquireAttribute("attrR64")
 
-check_object(attrString, "attrString")
-check_object(attrI8, "attrI8")
-check_object(attrI16, "attrI16")
-check_object(attrI32, "attrI32")
-check_object(attrI64, "attrI64")
-check_object(attrU8, "attrU8")
-check_object(attrU16, "attrU16")
-check_object(attrU32, "attrU32")
-check_object(attrU64, "attrU64")
-check_object(attrR32, "attrR32")
-check_object(attrR64, "attrR64")
+        check_object(attrString, "attrString")
+        check_object(attrI8, "attrI8")
+        check_object(attrI16, "attrI16")
+        check_object(attrI32, "attrI32")
+        check_object(attrI64, "attrI64")
+        check_object(attrU8, "attrU8")
+        check_object(attrU16, "attrU16")
+        check_object(attrU32, "attrU32")
+        check_object(attrU64, "attrU64")
+        check_object(attrR32, "attrR32")
+        check_object(attrR64, "attrR64")
 
-attrStringData = attrString.DataString()
-if(attrStringData[0] != "one"):
-    raise ValueError('attrStringData[0] failed')
-if(attrStringData[1] != "two"):
-    raise ValueError('attrStringData[1] failed')
-if(attrStringData[2] != "three"):
-    raise ValueError('attrStringData[2] failed')
+        attrStringData = attrString.DataString()
+        if(attrStringData[0] != "one"):
+            raise ValueError('attrStringData[0] failed')
+        if(attrStringData[1] != "two"):
+            raise ValueError('attrStringData[1] failed')
+        if(attrStringData[2] != "three"):
+            raise ValueError('attrStringData[2] failed')
 
-attrI8Data = attrI8.Data()
-attrI16Data = attrI16.Data()
-attrI32Data = attrI32.Data()
-attrI64Data = attrI64.Data()
-attrU8Data = attrU8.Data()
-attrU16Data = attrU16.Data()
-attrU32Data = attrU32.Data()
-attrU64Data = attrU64.Data()
-attrR32Data = attrR32.Data()
-attrR64Data = attrR64.Data()
+        attrI8Data = attrI8.Data()
+        attrI16Data = attrI16.Data()
+        attrI32Data = attrI32.Data()
+        attrI64Data = attrI64.Data()
+        attrU8Data = attrU8.Data()
+        attrU16Data = attrU16.Data()
+        attrU32Data = attrU32.Data()
+        attrU64Data = attrU64.Data()
+        attrR32Data = attrR32.Data()
+        attrR64Data = attrR64.Data()
+        
+        check_array(attrI8Data, data.I8, 'I8')
+        check_array(attrI16Data, data.I16, 'I16')
+        check_array(attrI32Data, data.I32, 'I32')
+        check_array(attrI64Data, data.I64, 'I64')
+        check_array(attrU8Data, data.U8, 'U8')
+        check_array(attrU16Data, data.U16, 'U16')
+        check_array(attrU32Data, data.U32, 'U32')
+        check_array(attrU64Data, data.U64, 'U64')
+        check_array(attrR32Data, data.R32, 'R32')
+        check_array(attrR64Data, data.R64, 'R64')
 
-check_array(attrI8Data, data.I8, 'I8')
-check_array(attrI16Data, data.I16, 'I16')
-check_array(attrI32Data, data.I32, 'I32')
-check_array(attrI64Data, data.I64, 'I64')
-check_array(attrU8Data, data.U8, 'U8')
-check_array(attrU16Data, data.U16, 'U16')
-check_array(attrU32Data, data.U32, 'U32')
-check_array(attrU64Data, data.U64, 'U64')
-check_array(attrR32Data, data.R32, 'R32')
-check_array(attrR64Data, data.R64, 'R64')
+        attributesInfo = ioReader.AvailableAttributes()
+        for name, info in attributesInfo.items():
+            check_name(name, attr_names)
+            if rank == 0:
+                print("attribute_name: " + name)
+                for key, value in info.items():
+                    print("\t" + key + ": " + value)
+                print("\n")
 
-attributesInfo = ioReader.AvailableAttributes()
-for name, info in attributesInfo.items():
-    check_name(name, attr_names)
-    if rank == 0:
-        print("attribute_name: " + name)
-        for key, value in info.items():
-            print("\t" + key + ": " + value)
-        print("\n")
+    varStr = ioReader.InquireVariable("varStr")
+    varI8 = ioReader.InquireVariable("varI8")
+    varI16 = ioReader.InquireVariable("varI16")
+    varI32 = ioReader.InquireVariable("varI32")
+    varI64 = ioReader.InquireVariable("varI64")
+    varU8 = ioReader.InquireVariable("varU8")
+    varU16 = ioReader.InquireVariable("varU16")
+    varU32 = ioReader.InquireVariable("varU32")
+    varU64 = ioReader.InquireVariable("varU64")
+    varR32 = ioReader.InquireVariable("varR32")
+    varR64 = ioReader.InquireVariable("varR64")
+    
+    check_object(varStr, "varStr")
+    check_object(varI8, "varI8")
+    check_object(varI16, "varI16")
+    check_object(varI32, "varI32")
+    check_object(varI64, "varI64")
+    check_object(varU8, "varU8")
+    check_object(varU16, "varU16")
+    check_object(varU32, "varU32")
+    check_object(varU64, "varU64")
+    check_object(varR32, "varR32")
+    check_object(varR64, "varR64")
 
-varStr = ioReader.InquireVariable("varStr")
-varI8 = ioReader.InquireVariable("varI8")
-varI16 = ioReader.InquireVariable("varI16")
-varI32 = ioReader.InquireVariable("varI32")
-varI64 = ioReader.InquireVariable("varI64")
-varU8 = ioReader.InquireVariable("varU8")
-varU16 = ioReader.InquireVariable("varU16")
-varU32 = ioReader.InquireVariable("varU32")
-varU64 = ioReader.InquireVariable("varU64")
-varR32 = ioReader.InquireVariable("varR32")
-varR64 = ioReader.InquireVariable("varR64")
+    variablesInfo = ioReader.AvailableVariables()
+    for name, info in variablesInfo.items():
+        check_name(name, var_names)
+        if rank == 0:
+            print("variable_name: " + name)
+            for key, value in info.items():
+                print("\t" + key + ": " + value)
+            print("\n")
+            
+    
+    data.update(rank, current_step, size)
+    
+    varI8.SetSelection([start, count])
+    varI16.SetSelection([start, count])
+    varI32.SetSelection([start, count])
+    varI64.SetSelection([start, count])
+    varU8.SetSelection([start, count])
+    varU16.SetSelection([start, count])
+    varU32.SetSelection([start, count])
+    varU64.SetSelection([start, count])
+    varR32.SetSelection([start, count])
+    varR64.SetSelection([start, count])
+    
+    inI8 = np.zeros((Nx), dtype=np.int8)
+    inI16 = np.zeros((Nx), dtype=np.int16)
+    inI32 = np.zeros((Nx), dtype=np.int32)
+    inI64 = np.zeros((Nx), dtype=np.int64)
+    inU8 = np.zeros((Nx), dtype=np.uint8)
+    inU16 = np.zeros((Nx), dtype=np.uint16)
+    inU32 = np.zeros((Nx), dtype=np.uint32)
+    inU64 = np.zeros((Nx), dtype=np.uint64)
+    inR32 = np.zeros((Nx), dtype=np.float32)
+    inR64 = np.zeros((Nx), dtype=np.float64)
+    
+    myString = np.zeros([varStr.SelectionSize()], dtype=np.str)
+    reader.Get(varStr, myString)
+    print(" myString  ")
+    print( myString )
+    
+    reader.Get(varI8, inI8)
+    reader.Get(varI16, inI16)
+    reader.Get(varI32, inI32)
+    reader.Get(varI64, inI64)
+    reader.Get(varU8, inU8)
+    reader.Get(varU16, inU16)
+    reader.Get(varU32, inU32)
+    reader.Get(varU64, inU64)
+    reader.Get(varR32, inR32)
+    reader.Get(varR64, inR64)
+    reader.EndStep()
+    
+    for j in range(0, Nx):
+        if(inI8[i] != data.I8[i]):
+            raise ValueError('failed reading I8')
 
-check_object(varStr, "varStr")
-check_object(varI8, "varI8")
-check_object(varI16, "varI16")
-check_object(varI32, "varI32")
-check_object(varI64, "varI64")
-check_object(varU8, "varU8")
-check_object(varU16, "varU16")
-check_object(varU32, "varU32")
-check_object(varU64, "varU64")
-check_object(varR32, "varR32")
-check_object(varR64, "varR64")
+        if(inI16[i] != data.I16[i]):
+            raise ValueError('failed reading I16')
 
-variablesInfo = ioReader.AvailableVariables()
-for name, info in variablesInfo.items():
-    check_name(name, var_names)
-    if rank == 0:
-        print("variable_name: " + name)
-        for key, value in info.items():
-            print("\t" + key + ": " + value)
-        print("\n")
+        if(inI32[i] != data.I32[i]):
+            raise ValueError('failed reading I32')
+
+        if(inI64[i] != data.I64[i]):
+            raise ValueError('failed reading I64')
+
+        if(inU8[i] != data.U8[i]):
+            raise ValueError('failed reading U8')
+
+        if(inU16[i] != data.U16[i]):
+            raise ValueError('failed reading U16')
+
+        if(inU32[i] != data.U32[i]):
+            raise ValueError('failed reading U32')
+
+        if(inU64[i] != data.U64[i]):
+            raise ValueError('failed reading U64')
+
+        if(inR32[i] != data.R32[i]):
+            raise ValueError('failed reading R32')
+
+        if(inR64[i] != data.R64[i]):
+            raise ValueError('failed reading R64')
 
 # here tests reader data
 reader.Close()

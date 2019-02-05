@@ -49,7 +49,7 @@ public:
 
     void Get(Variable variable, pybind11::array &array,
              const Mode launch = Mode::Deferred);
-    void Get(Variable variable, std::string &string,
+    void Get(Variable variable, std::vector<std::string> &strings,
              const Mode launch = Mode::Deferred);
     void PerformGets();
 

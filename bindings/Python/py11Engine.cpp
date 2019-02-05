@@ -115,6 +115,13 @@ void Engine::Get(Variable variable, pybind11::array &array, const Mode launch)
     {
         // not supported
     }
+    else if (type == "string")
+    {
+        m_Engine->Get(
+            *dynamic_cast<core::Variable<std::string> *>(variable.m_Variable),
+            reinterpret_cast<std::string *>(const_cast<void *>(array.data())),
+            launch);
+    }
 #define declare_type(T)                                                        \
     else if (type == helper::GetType<T>())                                     \
     {                                                                          \
@@ -135,7 +142,8 @@ void Engine::Get(Variable variable, pybind11::array &array, const Mode launch)
     }
 }
 
-void Engine::Get(Variable variable, std::string &string, const Mode launch)
+void Engine::Get(Variable variable, std::vector<std::string> &strings,
+                 const Mode launch)
 {
     helper::CheckForNullptr(m_Engine,
                             "for engine, in call to Engine::Get a numpy array");
@@ -149,7 +157,7 @@ void Engine::Get(Variable variable, std::string &string, const Mode launch)
     {
         m_Engine->Get(
             *dynamic_cast<core::Variable<std::string> *>(variable.m_Variable),
-            string, launch);
+            strings.data(), launch);
     }
     else
     {
