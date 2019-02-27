@@ -6,6 +6,7 @@
 #include <cstring>
 
 #include <iostream>
+#include <numeric>
 #include <stdexcept>
 
 #include <adios2.h>
@@ -1646,6 +1647,89 @@ TEST_F(BPWriteReadLocalVariables, ADIOS2BPWriteReadLocal1DBlockInfo)
                 std::cout << "\n";
             }
         }
+
+        bpReader.Close();
+    }
+}
+
+TEST_F(BPWriteReadLocalVariables, ADIOS2BPWriteReadLocal1DSubFile)
+{
+    const std::string fname("BPWriteReadLocal1DSubFile.bp");
+
+    int mpiRank = 0, mpiSize = 1;
+    // Number of rows
+    const size_t Nx = 3;
+
+#ifdef ADIOS2_HAVE_MPI
+    MPI_Comm_rank(MPI_COMM_WORLD, &mpiRank);
+    MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
+#endif
+    // data for block 0 and block 1 per rank
+    std::vector<std::vector<int32_t>> data(2, std::vector<int32_t>(Nx));
+
+    const int32_t startBlock0 = 3 * mpiRank + 1;
+    const int32_t startBlock1 = 3 * mpiRank + 15;
+
+    std::iota(data[0].begin(), data[0].end(), startBlock0);
+    std::iota(data[1].begin(), data[1].end(), startBlock1);
+
+#ifdef ADIOS2_HAVE_MPI
+    adios2::ADIOS adios(MPI_COMM_WORLD, adios2::DebugON);
+#else
+    adios2::ADIOS adios(true);
+#endif
+    {
+        adios2::IO io = adios.DeclareIO("TestIO");
+        const adios2::Dims shape{};
+        const adios2::Dims start{};
+        const adios2::Dims count{Nx};
+
+        auto var_i32 = io.DefineVariable<int32_t>("i32", shape, start, count,
+                                                  adios2::ConstantDims);
+
+        adios2::Engine bpWriter = io.Open(fname, adios2::Mode::Write);
+        bpWriter.Put(var_i32, data[0].data());
+        bpWriter.Put(var_i32, data[1].data());
+        bpWriter.Close();
+    }
+
+    {
+        adios2::IO io = adios.DeclareIO("ReadIO");
+
+        // each rank opens a local subfile
+        const std::string subFileName =
+            fname + "/" + fname + "." + std::to_string(mpiRank);
+
+        adios2::Engine bpReader = io.Open(fname, adios2::Mode::Read);
+
+        auto var_i32 = io.InquireVariable<int32_t>("i32");
+        EXPECT_EQ(var_i32.ShapeID(), adios2::ShapeID::LocalArray);
+        EXPECT_EQ(var_i32.Steps(), 1);
+        EXPECT_EQ(var_i32.Shape().size(), 0);
+        EXPECT_EQ(var_i32.Start().size(), 0);
+        EXPECT_EQ(var_i32.Count()[0], Nx);
+
+        std::vector<int32_t> inI32;
+
+        for (size_t b = 0; b < 2; ++b)
+        {
+            var_i32.SetBlockSelection(b);
+
+            EXPECT_EQ(var_i32.BlockID(), b);
+
+            bpReader.Get(var_i32, inI32, adios2::Mode::Sync);
+
+            EXPECT_EQ(inI32.size(), Nx);
+
+            for (size_t i = 0; i < Nx; ++i)
+            {
+                std::stringstream ss;
+                ss << "block=" << b << " i=" << i << " rank=" << mpiRank;
+                std::string msg = ss.str();
+
+                EXPECT_EQ(inI32[i], );
+            }
+        } // block loop
 
         bpReader.Close();
     }
