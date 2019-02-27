@@ -1698,9 +1698,9 @@ TEST_F(BPWriteReadLocalVariables, ADIOS2BPWriteReadLocal1DSubFile)
 
         // each rank opens a local subfile
         const std::string subFileName =
-            fname + "/" + fname + "." + std::to_string(mpiRank);
+            fname + ".dir/" + fname + "." + std::to_string(mpiRank);
 
-        adios2::Engine bpReader = io.Open(fname, adios2::Mode::Read);
+        adios2::Engine bpReader = io.Open(subFileName, adios2::Mode::Read);
 
         auto var_i32 = io.InquireVariable<int32_t>("i32");
         EXPECT_EQ(var_i32.ShapeID(), adios2::ShapeID::LocalArray);
@@ -1721,14 +1721,15 @@ TEST_F(BPWriteReadLocalVariables, ADIOS2BPWriteReadLocal1DSubFile)
 
             EXPECT_EQ(inI32.size(), Nx);
 
+            std::stringstream ss;
+            ss << "rank= " << mpiRank << " block=" << b << " ";
             for (size_t i = 0; i < Nx; ++i)
             {
-                std::stringstream ss;
-                ss << "block=" << b << " i=" << i << " rank=" << mpiRank;
-                std::string msg = ss.str();
-
-                EXPECT_EQ(inI32[i], );
+                EXPECT_EQ(inI32[i], data[b][i]);
+                ss << inI32[i] << " ";
             }
+            std::cout << ss.str() << "\n";
+
         } // block loop
 
         bpReader.Close();
