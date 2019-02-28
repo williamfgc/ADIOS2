@@ -15,12 +15,13 @@
 
 #include "../SmallTestData.h"
 
-std::string engineName; // comes from command line
+std::string engineName; // comes from command lines
+std::string ext;        // from engine name
 
-class BPWriteReadTestADIOS2 : public ::testing::Test
+class WriteReadGlobalArrays : public ::testing::Test
 {
 public:
-    BPWriteReadTestADIOS2() = default;
+    WriteReadGlobalArrays() = default;
 
     SmallTestData m_TestData;
 };
@@ -28,13 +29,9 @@ public:
 //******************************************************************************
 // 1D 1x8 test data
 //******************************************************************************
-
-// ADIOS2 BP write, native ADIOS1 read
-TEST_F(BPWriteReadTestADIOS2, ADIOS2BPWriteRead1D8)
+TEST_F(WriteReadGlobalArrays, GlobalArrays1D8)
 {
-    // Each process would write a 1x8 array and all processes would
-    // form a mpiSize * Nx 1D array
-    const std::string fname("ADIOS2BPWriteRead1D8.bp");
+    const std::string fname("GlobalArrays1D8" + ext);
 
     int mpiRank = 0, mpiSize = 1;
     // Number of rows
@@ -92,18 +89,9 @@ TEST_F(BPWriteReadTestADIOS2, ADIOS2BPWriteRead1D8)
         }
         else
         {
-            // Create the BP Engine
             io.SetEngine("BPFile");
         }
 
-        io.AddTransport("file");
-
-        // QUESTION: It seems that BPFilterWriter cannot overwrite existing
-        // files
-        // Ex. if you tune Nx and NSteps, the test would fail. But if you clear
-        // the cache in
-        // ${adios2Build}/testing/adios2/engine/bp/ADIOS2BPWriteADIOS1Read1D8.bp.dir,
-        // then it works
         adios2::Engine bpWriter = io.Open(fname, adios2::Mode::Write);
 
         for (size_t step = 0; step < NSteps; ++step)
@@ -340,11 +328,11 @@ TEST_F(BPWriteReadTestADIOS2, ADIOS2BPWriteRead1D8)
 //******************************************************************************
 
 // ADIOS2 BP write, native ADIOS1 read
-TEST_F(BPWriteReadTestADIOS2, ADIOS2BPWriteRead2D2x4)
+TEST_F(WriteReadGlobalArrays, GlobalArrays2D2x4)
 {
     // Each process would write a 2x4 array and all processes would
     // form a 2D 2 * (numberOfProcess*Nx) matrix where Nx is 4 here
-    const std::string fname("ADIOS2BPWriteRead2D2x4Test.bp");
+    const std::string fname("GlobalArrays2D2x4" + ext);
 
     int mpiRank = 0, mpiSize = 1;
     // Number of rows
@@ -649,11 +637,11 @@ TEST_F(BPWriteReadTestADIOS2, ADIOS2BPWriteRead2D2x4)
 // 2D 4x2 test data
 //******************************************************************************
 
-TEST_F(BPWriteReadTestADIOS2, ADIOS2BPWriteRead2D4x2)
+TEST_F(WriteReadGlobalArrays, GlobalArrays2D4x2)
 {
     // Each process would write a 4x2 array and all processes would
     // form a 2D 4 * (NumberOfProcess * Nx) matrix where Nx is 2 here
-    const std::string fname("ADIOS2BPWriteRead2D4x2Test.bp");
+    const std::string fname("GlobalArrays2D4x2" + ext);
 
     int mpiRank = 0, mpiSize = 1;
     // Number of rows
@@ -944,11 +932,11 @@ TEST_F(BPWriteReadTestADIOS2, ADIOS2BPWriteRead2D4x2)
     }
 }
 
-TEST_F(BPWriteReadTestADIOS2, ADIOS2BPWriteRead2D4x2_ReadMultiSteps)
+TEST_F(WriteReadGlobalArrays, GlobalArrays2D4x2_ReadMultiSteps)
 {
     // Each process would write a 4x2 array and all processes would
     // form a 2D 4 * (NumberOfProcess * Nx) matrix where Nx is 2 here
-    const std::string fname("ADIOS2BPWriteRead2D4x2Test_ReadMultiSteps.bp");
+    const std::string fname("GlobalArrays2D4x2_ReadMultiSteps" + ext);
 
     int mpiRank = 0, mpiSize = 1;
     // Number of rows
@@ -1239,11 +1227,11 @@ TEST_F(BPWriteReadTestADIOS2, ADIOS2BPWriteRead2D4x2_ReadMultiSteps)
     }
 }
 
-TEST_F(BPWriteReadTestADIOS2, ADIOS2BPWriteRead2D4x2_MultiStepsOverflow)
+TEST_F(WriteReadGlobalArrays, MultiStepsOverflow)
 {
     // Each process would write a 4x2 array and all processes would
     // form a 2D 4 * (NumberOfProcess * Nx) matrix where Nx is 2 here
-    const std::string fname("ADIOS2BPWriteRead2D4x2Test_Overflow.bp");
+    const std::string fname("MultiStepsOverflow" + ext);
 
     int mpiRank = 0, mpiSize = 1;
     // Number of rows
@@ -1446,11 +1434,11 @@ TEST_F(BPWriteReadTestADIOS2, ADIOS2BPWriteRead2D4x2_MultiStepsOverflow)
     }
 }
 
-TEST_F(BPWriteReadTestADIOS2, OpenEngineTwice)
+TEST_F(WriteReadGlobalArrays, OpenEngineTwice)
 {
     // Each process would write a 4x2 array and all processes would
     // form a 2D 4 * (NumberOfProcess * Nx) matrix where Nx is 2 here
-    const std::string fname("OpenTwice.bp");
+    const std::string fname("OpenEngineTwice" + ext);
 
 #ifdef ADIOS2_HAVE_MPI
     adios2::ADIOS adios(MPI_COMM_WORLD, adios2::DebugON);
@@ -1482,11 +1470,11 @@ TEST_F(BPWriteReadTestADIOS2, OpenEngineTwice)
     }
 }
 
-TEST_F(BPWriteReadTestADIOS2, ReadStartCount)
+TEST_F(WriteReadGlobalArrays, ReadStartCount)
 {
     // Each process would write a 4x2 array and all processes would
     // form a 2D 4 * (NumberOfProcess * Nx) matrix where Nx is 2 here
-    const std::string fname("ReadStartCount.bp");
+    const std::string fname("ReadStartCount" + ext);
 
     int mpiRank = 0, mpiSize = 1;
 
@@ -1573,6 +1561,7 @@ int main(int argc, char **argv)
     if (argc > 1)
     {
         engineName = std::string(argv[1]);
+        ext = (engineName == "HDF5") ? ".h5" : ".bp";
     }
     result = RUN_ALL_TESTS();
 
