@@ -24,8 +24,4 @@ namespace pybind11
 
 PYBIND11_MODULE(adios2_eco, m) {}
 
-
-
-
-
 }

@@ -13,20 +13,17 @@
 
 namespace adios2
 {
+namespace py11
+{
 namespace eco
 {
 
-
-
-
-
-
-
-
-
-
+class FileSystem
+{
+};
 
 } // end namespace eco
+} // end namespace py11
 } // end namespace adios2
 
 #endif /* ADIOS2_BINDINGS_PYTHON_ECO_PY11FILESYSTEM_H_ */

@@ -120,6 +120,13 @@ enum class SelectionType
     Auto         ///< Let the engine decide what to return
 };
 
+enum class PatternType
+{
+    Wildcard,
+    Printf,
+    Regex,
+};
+
 // Types
 using std::size_t;
 

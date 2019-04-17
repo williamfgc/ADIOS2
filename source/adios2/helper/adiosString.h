@@ -137,6 +137,24 @@ std::string DimsToString(const Dims &dimensions);
 std::string GlobalName(const std::string &localName, const std::string &prefix,
                        const std::string separator) noexcept;
 
+/**
+ * Returns the corresponding name for the pattern, step and patternType in a
+ * Series collection
+ * Example:
+ * 	pattern = A_%3d.bp
+ * 	step = 10
+ * 	patternType = printf
+ * 	returns A_010.bp
+ *
+ * @param pattern
+ * @param current
+ * @param patternType
+ * @return
+ */
+std::string
+SeriesName(const std::string &pattern, const size_t step,
+           const PatternType patternType = PatternType::Printf) noexcept;
+
 } // end namespace helper
 } // end namespace adios2
 

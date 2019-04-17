@@ -13,7 +13,8 @@
 /// \cond EXCLUDE_FROM_DOXYGEN
 #include <algorithm> //std::transform
 #include <fstream>
-#include <ios> //std::ios_base::failure
+#include <ios>   //std::ios_base::failure
+#include <regex> // std::regex
 #include <sstream>
 #include <stdexcept> // std::invalid_argument
 /// \endcond
@@ -285,6 +286,39 @@ std::string GlobalName(const std::string &localName, const std::string &prefix,
     }
 
     return prefix + separator + localName;
+}
+
+std::string SeriesName(const std::string &pattern, const size_t current,
+                       const PatternType patternType) noexcept
+{
+    auto lf_Printf = [](const std::string &pattern,
+                        const size_t current) -> std::string {
+        std::string name;
+        // %d or %Nd, where N: number of digits, and d: integer to regex
+        std::regex printfReg("(.*)(%)(\\d*)(d)(.*)");
+        // extract number of digits in 3rd group
+        std::smatch groups;
+        if (std::regex_search(pattern, groups, printfReg))
+        {
+            const std::string digitsStr = groups[3].str();
+            const std::string nFilesGroup =
+                (digitsStr == "0") ? "(\\d*)"
+                                   : "(\\d{" + groups[3].str() + "})";
+            const std::string filePattern =
+                groups[1].str() + current + groups[5].str();
+            // TODO: handle number of digits for current
+        }
+
+        return name;
+    };
+
+    std::string name;
+    if (patternType == PatternType::Printf)
+    {
+        name = lf_Printf(pattern, current);
+    }
+    // TODO other PatternTypes (e.g. regex)
+    return name;
 }
 
 } // end namespace helper
