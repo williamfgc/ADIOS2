@@ -33,8 +33,8 @@ namespace eco
 class StreamSeries : public EcoSystem
 {
 public:
-    StreamSeries(core::IO &io, const std::string &pattern,
-                 const adios2::Mode mode, MPI_Comm comm);
+    StreamSeries(core::IO &io, const adios2::Mode mode, MPI_Comm comm,
+                 const std::string &pattern, const PatternType patternType);
 
     StreamSeries(const StreamSeries &) = delete;
     StreamSeries(const StreamSeries &&) = default;
@@ -48,7 +48,8 @@ public:
     std::string Type() const;
 
     StepStatus BeginStep();
-    StepStatus BeginStep(StepMode mode, const float timeoutSeconds = -1.0);
+    StepStatus BeginStep(const StepMode mode,
+                         const float timeoutSeconds = -1.0);
 
     template <class T>
     std::vector<typename core::Variable<T>::Info>
@@ -98,9 +99,12 @@ public:
     void Close();
 
 private:
-    std::string m_Pattern;
     adios2::Mode m_Mode;
     MPI_Comm m_MPIComm;
+    const std::string m_Pattern;
+    const PatternType m_PatternType;
+
+    size_t m_StrideOut = 1;
 
     core::Engine *m_Engine = nullptr;
     size_t m_CurrentStep = 0;

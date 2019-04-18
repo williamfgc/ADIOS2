@@ -15,11 +15,20 @@ namespace adios2
 namespace eco
 {
 
-StreamSeries::StreamSeries(core::IO &io, const std::string &pattern,
-                           const adios2::Mode mode, MPI_Comm comm)
-: EcoSystem("StreamSeries", &io), m_Pattern(pattern), m_Mode(mode),
-  m_MPIComm(comm)
+StreamSeries::StreamSeries(core::IO &io, const adios2::Mode mode, MPI_Comm comm,
+                           const std::string &pattern,
+                           const PatternType patternType)
+: EcoSystem("StreamSeries", &io), m_Mode(mode), m_MPIComm(comm),
+  m_Pattern(pattern), m_PatternType(patternType)
 {
+    // set stride out
+    // TODO: make it a helper function to search for lower case
+    auto it = m_IO->m_Parameters.find("StrideOut");
+    if (it != m_IO->m_Parameters.end())
+    {
+        // TODO: make it a helper function to make sure it maps to a value
+        m_StrideOut = std::stoull(it->second);
+    }
 }
 
 std::string StreamSeries::Pattern() const { return m_Pattern; }
@@ -36,9 +45,46 @@ std::string StreamSeries::Type() const
     return m_Engine->m_EngineType;
 }
 
-StepStatus StreamSeries::BeginStep() {}
+StepStatus StreamSeries::BeginStep()
+{
+    if (m_Mode == Mode::Read)
+    {
+        return BeginStep(StepMode::NextAvailable, -1.f);
+    }
+    else
+    {
+        return BeginStep(StepMode::Append, -1.f);
+    }
+}
 
-StepStatus StreamSeries::BeginStep(StepMode mode, const float timeoutSeconds) {}
+StepStatus StreamSeries::BeginStep(const StepMode stepMode,
+                                   const float timeoutSeconds)
+{
+    const std::string name = helper::SeriesName(
+        m_Pattern, m_CurrentStep, m_PatternType, m_IO->m_DebugMode);
+
+    size_t stepCounter = 0;
+    StepStatus status = StepStatus::EndOfStream;
+    while (stepCounter < m_StrideOut)
+    {
+        m_Engine = &m_IO->Open(name, m_Mode, m_MPIComm);
+        if (m_Engine == nullptr)
+        {
+            ++stepCounter;
+            continue;
+        }
+        status = m_Engine->BeginStep(stepMode, timeoutSeconds);
+        if (status == StepStatus::OK)
+        {
+            break;
+        }
+        ++stepCounter;
+    }
+
+    // TODO: adjust for multiple steps inside a file
+    m_CurrentStep += stepCounter;
+    return status;
+}
 
 size_t StreamSeries::CurrentStep() const { return m_CurrentStep; }
 

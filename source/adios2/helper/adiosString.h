@@ -151,9 +151,24 @@ std::string GlobalName(const std::string &localName, const std::string &prefix,
  * @param patternType
  * @return
  */
-std::string
-SeriesName(const std::string &pattern, const size_t step,
-           const PatternType patternType = PatternType::Printf) noexcept;
+std::string SeriesName(const std::string &pattern, const size_t step,
+                       const PatternType patternType,
+                       const bool debugMode = true);
+
+/**
+ * Returns a string with a fixed width representation for an integer number.
+ * Fills with zeros on the left hand side.
+ * e.g. number = 10, digits = 4,  return = 0010
+ * @param numberStr input number in string form
+ * @param digitsStr fixed width number of digits as string, must be larger or
+ * equal to the number of digits in number, if 0 just takes the width of
+ * numberStr
+ * @param debugMode true: throw exception if digits < numberStr.size()
+ * @return fixed width representation as string
+ */
+std::string FixedWidth(const std::string &numberStr,
+                       const std::string &digitsStr,
+                       const bool debugMode = true);
 
 } // end namespace helper
 } // end namespace adios2

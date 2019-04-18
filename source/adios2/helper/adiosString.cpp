@@ -288,25 +288,35 @@ std::string GlobalName(const std::string &localName, const std::string &prefix,
     return prefix + separator + localName;
 }
 
-std::string SeriesName(const std::string &pattern, const size_t current,
-                       const PatternType patternType) noexcept
+std::string SeriesName(const std::string &pattern, const size_t step,
+                       const PatternType patternType, const bool debugMode)
 {
-    auto lf_Printf = [](const std::string &pattern,
-                        const size_t current) -> std::string {
+    auto lf_Printf = [](const std::string &pattern, const size_t step,
+                        const bool debugMode) -> std::string {
         std::string name;
         // %d or %Nd, where N: number of digits, and d: integer to regex
-        std::regex printfReg("(.*)(%)(\\d*)(d)(.*)");
+        // can constexpr be used?
+        const std::regex printfReg("(.*)(%)(\\d*)(d)(.*)");
         // extract number of digits in 3rd group
         std::smatch groups;
         if (std::regex_search(pattern, groups, printfReg))
         {
             const std::string digitsStr = groups[3].str();
-            const std::string nFilesGroup =
-                (digitsStr == "0") ? "(\\d*)"
-                                   : "(\\d{" + groups[3].str() + "})";
-            const std::string filePattern =
-                groups[1].str() + current + groups[5].str();
-            // TODO: handle number of digits for current
+            // step with trailing zeros to match fix width digits
+            const std::string fixedWidthStep =
+                FixedWidth(std::to_string(step), digitsStr, debugMode);
+            name = groups[1].str() + fixedWidthStep + groups[5].str();
+        }
+        else
+        {
+            if (debugMode)
+            {
+                throw std::invalid_argument(
+                    "ERROR: pattern " + pattern +
+                    " does not match expected adios2::PatternType printf with "
+                    "%Nd (N is number of digits) or %d for step " +
+                    std::to_string(step) + "\n");
+            }
         }
 
         return name;
@@ -315,10 +325,35 @@ std::string SeriesName(const std::string &pattern, const size_t current,
     std::string name;
     if (patternType == PatternType::Printf)
     {
-        name = lf_Printf(pattern, current);
+        name = lf_Printf(pattern, step);
     }
     // TODO other PatternTypes (e.g. regex)
     return name;
+}
+
+std::string FixedWidth(const std::string &numberStr,
+                       const std::string digitsStr, const bool debugMode)
+{
+    if (digitsStr.empty())
+    {
+        return numberStr;
+    }
+
+    if (debugMode)
+    {
+        if (digitsStr.size() < numberStr.size())
+        {
+            throw std::invalid_argument("ERROR: number of digits " + digitsStr +
+                                        " is smaller than the number of "
+                                        "significant digits in integer " +
+                                        numberStr + "\n");
+        }
+    }
+
+    const size_t offset = digitsStr.size() - numberStr.size();
+    std::string fixedWidth(digitsStr.size(), "0");
+    fixedWidth.replace(offset, numberStr.size(), numberStr);
+    return fixedWidth;
 }
 
 } // end namespace helper
