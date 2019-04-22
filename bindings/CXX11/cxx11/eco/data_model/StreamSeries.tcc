@@ -4,34 +4,39 @@
  *
  * StreamSeries.tcc
  *
- *  Created on: Apr 16, 2019
+ *  Created on: Apr 22, 2019
  *      Author: William F Godoy godoywf@ornl.gov
  */
 
-#ifndef ADIOS2_ECOKIT_DATA_MODEL_STREAMSERIES_TCC_
-#define ADIOS2_ECOKIT_DATA_MODEL_STREAMSERIES_TCC_
+#ifndef ADIOS2_BINDINGS_CXX11_CXX11_ECO_DATA_MODEL_STREAMSERIES_TCC_
+#define ADIOS2_BINDINGS_CXX11_CXX11_ECO_DATA_MODEL_STREAMSERIES_TCC_
 
-#include "adios2/eco/data_model/StreamSeries.h"
+#include "StreamSeries.h"
+
+#include "adios2/helper/adiosFunctions.h"
 
 namespace adios2
 {
-namespace data_model
+namespace eco
 {
 
 template <class T>
-typename core::Variable<T>::Span &StreamSeries::Put(core::Variable<T> &variable,
-                                                    const size_t bufferID,
-                                                    const T &value)
+std::vector<typename Variable<T>::Info>
+StreamSeries::BlocksInfo(const Variable<T> variable) const
 {
-    CheckNullEngine("Put span");
-    m_Engine->Put(variable, bufferID, value);
+    return m_Engine->BlocksInfo(variable, 0);
 }
 
 template <class T>
-void StreamSeries::Put(core::Variable<T> &variable, const T *data,
-                       const Mode launch)
+typename Variable<T>::Span
+StreamSeries::Put(Variable<T> variable, const size_t bufferID, const T &value)
 {
-    CheckNullEngine("Put");
+    return m_Engine->Put(variable, bufferID, value);
+}
+
+template <class T>
+void StreamSeries::Put(Variable<T> variable, const T *data, const Mode launch)
+{
     m_Engine->Put(variable, data, launch);
 }
 
@@ -39,15 +44,12 @@ template <class T>
 void StreamSeries::Put(const std::string &variableName, const T *data,
                        const Mode launch)
 {
-    CheckNullEngine("Put");
     m_Engine->Put(variableName, data, launch);
 }
 
 template <class T>
-void StreamSeries::Put(core::Variable<T> &variable, const T &datum,
-                       const Mode launch)
+void StreamSeries::Put(Variable<T> variable, const T &datum, const Mode launch)
 {
-    CheckNullEngine("Put");
     m_Engine->Put(variable, datum, launch);
 }
 
@@ -55,29 +57,25 @@ template <class T>
 void StreamSeries::Put(const std::string &variableName, const T &datum,
                        const Mode launch)
 {
-    CheckNullEngine("Put");
     m_Engine->Put(variableName, datum, launch);
 }
 
 template <class T>
-void StreamSeries::Get(core::Variable<T> &variable, T *data, const Mode launch)
+void StreamSeries::Get(Variable<T> variable, T *data, const Mode launch)
 {
-    CheckNullEngine("Get");
-    m_Engine->Get(variable, data, launch);
+    m_Engine->Put(variable, data, launch);
 }
 
 template <class T>
 void StreamSeries::Get(const std::string &variableName, T *data,
                        const Mode launch)
 {
-    CheckNullEngine("Get");
     m_Engine->Get(variableName, data, launch);
 }
 
 template <class T>
-void StreamSeries::Get(core::Variable<T> &variable, T &datum, const Mode launch)
+void StreamSeries::Get(Variable<T> &variable, T &datum, const Mode launch)
 {
-    CheckNullEngine("Get");
     m_Engine->Get(variable, datum, launch);
 }
 
@@ -85,15 +83,13 @@ template <class T>
 void StreamSeries::Get(const std::string &variableName, T &datum,
                        const Mode launch)
 {
-    CheckNullEngine("Get");
     m_Engine->Get(variableName, datum, launch);
 }
 
 template <class T>
-void StreamSeries::Get(core::Variable<T> &variable, std::vector<T> &dataV,
+void StreamSeries::Get(Variable<T> variable, std::vector<T> &dataV,
                        const Mode launch)
 {
-    CheckNullEngine("Get");
     m_Engine->Get(variable, dataV, launch);
 }
 
@@ -101,11 +97,10 @@ template <class T>
 void StreamSeries::Get(const std::string &variableName, std::vector<T> &dataV,
                        const Mode launch)
 {
-    CheckNullEngine("Get");
     m_Engine->Get(variableName, dataV, launch);
 }
 
-} // namespace eco
-} // namespace adios2
+} // end namespace eco
+} // end namespace adios2
 
-#endif /* ADIOS2_ECO_DATA_MODEL_STREAMSERIES_TCC_ */
+#endif /* ADIOS2_BINDINGS_CXX11_CXX11_ECO_DATA_MODEL_STREAMSERIES_TCC_ */

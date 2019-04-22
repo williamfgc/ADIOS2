@@ -11,18 +11,17 @@
 #ifndef ADIOS2_ECO_DATA_MODEL_FILESYSTEM_H_
 #define ADIOS2_ECO_DATA_MODEL_FILESYSTEM_H_
 
-#include "adios2/eco/EcoSystem.h"
-
 #include <map>
 #include <ostream>
 #include <string>
 
 #include "adios2/core/IO.h"
 #include "adios2/core/Stream.h"
+#include "adios2/eco/EcoSystem.h"
 
 namespace adios2
 {
-namespace eco
+namespace data_model
 {
 
 class FileSystem : public EcoSystem

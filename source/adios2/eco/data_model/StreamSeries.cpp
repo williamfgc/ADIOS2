@@ -12,7 +12,7 @@
 
 namespace adios2
 {
-namespace eco
+namespace data_model
 {
 
 StreamSeries::StreamSeries(core::IO &io, const adios2::Mode mode, MPI_Comm comm,
@@ -68,11 +68,6 @@ StepStatus StreamSeries::BeginStep(const StepMode stepMode,
     while (stepCounter < m_StrideOut)
     {
         m_Engine = &m_IO->Open(name, m_Mode, m_MPIComm);
-        if (m_Engine == nullptr)
-        {
-            ++stepCounter;
-            continue;
-        }
         status = m_Engine->BeginStep(stepMode, timeoutSeconds);
         if (status == StepStatus::OK)
         {
@@ -128,7 +123,11 @@ void StreamSeries::CheckNullEngine(const std::string &hint) const
     }
 }
 
-std::string StreamSeries::CurrentName() const {}
+std::string StreamSeries::CurrentName() const
+{
+    CheckNullEngine("CurrentName");
+    return m_Engine->m_Name;
+}
 
 #define declare_template_instantiation(T)                                      \
                                                                                \

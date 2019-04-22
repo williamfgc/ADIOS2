@@ -63,10 +63,11 @@ typename Variable<T>::Span Engine::Put(Variable<T> variable,
                                        const size_t bufferID, const T &value)
 {
     using IOType = typename TypeInfo<T>::IOType;
-    adios2::helper::CheckForNullptr(m_Engine,
-                                    "for Engine in call to Engine::Array");
-    adios2::helper::CheckForNullptr(variable.m_Variable,
-                                    "for variable in call to Engine::Array");
+    adios2::helper::CheckForNullptr(
+        m_Engine, "for Engine in call to Variable<T>::Span Engine::Put");
+    adios2::helper::CheckForNullptr(
+        variable.m_Variable,
+        "for variable in call to Variable<T>::Span Engine::Put");
 
     typename Variable<T>::Span::CoreSpan *coreSpan =
         reinterpret_cast<typename Variable<T>::Span::CoreSpan *>(

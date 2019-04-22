@@ -30,9 +30,15 @@ class Engine; // private implementation
 }
 /// \endcond
 
+namespace eco
+{
+class StreamSeries;
+}
+
 class Engine
 {
     friend class IO;
+    friend class StreamSeries;
 
 public:
     /**

@@ -8,7 +8,7 @@
  *      Author: William F Godoy godoywf@ornl.gov
  */
 
-#include "EcoSystem.h"
+#include "../eco/EcoSystem.h"
 
 namespace adios2
 {

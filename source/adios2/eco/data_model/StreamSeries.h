@@ -18,16 +18,15 @@
 #ifndef ADIOS2_ECO_DATA_MODEL_STREAMSERIES_H_
 #define ADIOS2_ECO_DATA_MODEL_STREAMSERIES_H_
 
-#include "adios2/eco/EcoSystem.h"
-
 #include "adios2/core/Engine.h"
 #include "adios2/core/IO.h"
 #include "adios2/core/Variable.h"
+#include "adios2/eco/EcoSystem.h"
 #include "adios2/helper/adiosFunctions.h"
 
 namespace adios2
 {
-namespace eco
+namespace data_model
 {
 
 class StreamSeries : public EcoSystem

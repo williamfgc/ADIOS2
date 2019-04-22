@@ -10,6 +10,6 @@
 
 namespace adios2
 {
-namespace eco
+namespace data_model
 {} // end namespace eco
 } // end namespace adios2
