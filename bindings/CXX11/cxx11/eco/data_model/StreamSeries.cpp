@@ -21,7 +21,8 @@ namespace eco
 StreamSeries::StreamSeries(adios2::IO &io, const adios2::Mode mode,
                            MPI_Comm comm, const std::string &pattern,
                            const adios2::PatternType patternType)
-: m_StreamSeries(new StreamSeries(io, mode, comm, pattern, patternType))
+: m_StreamSeries(new adios2::data_model::StreamSeries(*io.m_IO, mode, comm,
+                                                      pattern, patternType))
 {
 }
 
@@ -54,6 +55,41 @@ void StreamSeries::PerformGets() { m_StreamSeries->PerformGets(); }
 void StreamSeries::EndStep() { m_StreamSeries->EndStep(); }
 
 void StreamSeries::Close() { m_StreamSeries->Close(); }
+
+#define declare_template_instantiation(T)                                      \
+                                                                               \
+    template void StreamSeries::Put<T>(Variable<T>, const T *, const Mode);    \
+    template void StreamSeries::Put<T>(const std::string &, const T *,         \
+                                       const Mode);                            \
+                                                                               \
+    template void StreamSeries::Put<T>(Variable<T>, const T &, const Mode);    \
+    template void StreamSeries::Put<T>(const std::string &, const T &,         \
+                                       const Mode);                            \
+                                                                               \
+    template void StreamSeries::Get<T>(Variable<T>, T *, const Mode);          \
+    template void StreamSeries::Get<T>(const std::string &, T *, const Mode);  \
+                                                                               \
+    template void StreamSeries::Get<T>(Variable<T>, T &, const Mode);          \
+    template void StreamSeries::Get<T>(const std::string &, T &, const Mode);  \
+                                                                               \
+    template void StreamSeries::Get<T>(Variable<T>, std::vector<T> &,          \
+                                       const Mode);                            \
+                                                                               \
+    template void StreamSeries::Get<T>(const std::string &, std::vector<T> &,  \
+                                       const Mode);                            \
+                                                                               \
+    template std::vector<typename Variable<T>::Info> StreamSeries::BlocksInfo( \
+        const Variable<T>) const;
+
+ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
+#undef declare_template_instantiation
+
+#define declare_template_instantiation(T)                                      \
+    template typename Variable<T>::Span StreamSeries::Put(                     \
+        Variable<T>, const size_t, const T &);
+
+ADIOS2_FOREACH_PRIMITIVE_STDTYPE_1ARG(declare_template_instantiation)
+#undef declare_template_instantiation
 
 } // end namespace eco
 } // end namespace adios2

@@ -9,6 +9,7 @@
  */
 
 #include "StreamSeries.h"
+#include "StreamSeries.tcc"
 
 namespace adios2
 {
@@ -100,10 +101,7 @@ void StreamSeries::Close()
 {
     if (m_Engine != nullptr)
     {
-        if (!m_Engine->m_IsClosed)
-        {
-            m_Engine->Close();
-        }
+        m_Engine->Close();
         m_Engine = nullptr;
     }
 }
@@ -117,8 +115,8 @@ void StreamSeries::CheckNullEngine(const std::string &hint) const
         {
             throw std::invalid_argument(
                 "ERROR: in StreamSeries for pattern " + m_Pattern +
-                ", current Engine is null for step " + m_CurrentStep +
-                " in call to " + hint + "\n");
+                ", current Engine is null for step " +
+                std::to_string(m_CurrentStep) + " in call to " + hint + "\n");
         }
     }
 }
@@ -151,10 +149,7 @@ std::string StreamSeries::CurrentName() const
                                        const Mode);                            \
                                                                                \
     template void StreamSeries::Get<T>(const std::string &, std::vector<T> &,  \
-                                       const Mode);                            \
-                                                                               \
-    template std::vector<typename core::Variable<T>::Info>                     \
-    StreamSeries::BlocksInfo(const core::Variable<T> &) const;
+                                       const Mode);
 
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation

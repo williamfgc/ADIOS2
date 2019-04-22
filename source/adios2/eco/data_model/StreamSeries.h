@@ -32,11 +32,13 @@ namespace data_model
 class StreamSeries : public EcoSystem
 {
 public:
+    core::Engine *m_Engine = nullptr;
+
     StreamSeries(core::IO &io, const adios2::Mode mode, MPI_Comm comm,
                  const std::string &pattern, const PatternType patternType);
 
     StreamSeries(const StreamSeries &) = delete;
-    StreamSeries(const StreamSeries &&) = default;
+    StreamSeries(StreamSeries &&) = default;
     ~StreamSeries() = default;
 
     StreamSeries &operator=(const StreamSeries &) = delete;
@@ -49,10 +51,6 @@ public:
     StepStatus BeginStep();
     StepStatus BeginStep(const StepMode mode,
                          const float timeoutSeconds = -1.0);
-
-    template <class T>
-    std::vector<typename core::Variable<T>::Info>
-    BlocksInfo(const core::Variable<T> &variable) const;
 
     size_t CurrentStep() const;
 
@@ -105,7 +103,6 @@ private:
 
     size_t m_StrideOut = 1;
 
-    core::Engine *m_Engine = nullptr;
     size_t m_CurrentStep = 0;
 
     void CheckNullEngine(const std::string &hint) const;
@@ -139,10 +136,7 @@ private:
                                               std::vector<T> &, const Mode);   \
                                                                                \
     extern template void StreamSeries::Get<T>(const std::string &,             \
-                                              std::vector<T> &, const Mode);   \
-                                                                               \
-    extern template std::vector<typename core::Variable<T>::Info>              \
-    StreamSeries::BlocksInfo(const core::Variable<T> &) const;
+                                              std::vector<T> &, const Mode);
 
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation

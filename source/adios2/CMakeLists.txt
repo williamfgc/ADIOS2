@@ -20,6 +20,10 @@ add_library(adios2
   core/Variable.cpp core/Variable.tcc
   core/VariableBase.cpp
   core/VariableCompound.cpp core/VariableCompound.tcc
+  
+#eco
+  eco/EcoSystem.cpp
+  eco/data_model/StreamSeries.cpp eco/data_model/StreamSeries.tcc
 
 #operator callback
   operator/callback/Signature1.cpp

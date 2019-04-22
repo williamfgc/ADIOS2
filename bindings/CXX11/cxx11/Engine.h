@@ -38,7 +38,7 @@ class StreamSeries;
 class Engine
 {
     friend class IO;
-    friend class StreamSeries;
+    friend class eco::StreamSeries;
 
 public:
     /**

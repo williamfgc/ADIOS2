@@ -20,6 +20,7 @@ namespace adios2
 
 class EcoSystem
 {
+public:
     const std::string m_Tool;
     core::IO *m_IO = nullptr;
 

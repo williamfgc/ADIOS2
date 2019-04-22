@@ -24,4 +24,6 @@
 #include "cxx11/Variable.h"
 #include "cxx11/fstream/ADIOS2fstream.h"
 
+#include "cxx11/eco/data_model/StreamSeries.h"
+
 #endif /* ADIOS2_BINDINGS_CXX11_H_ */

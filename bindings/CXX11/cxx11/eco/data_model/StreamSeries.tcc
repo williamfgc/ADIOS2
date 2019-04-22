@@ -74,7 +74,7 @@ void StreamSeries::Get(const std::string &variableName, T *data,
 }
 
 template <class T>
-void StreamSeries::Get(Variable<T> &variable, T &datum, const Mode launch)
+void StreamSeries::Get(Variable<T> variable, T &datum, const Mode launch)
 {
     m_Engine->Get(variable, datum, launch);
 }

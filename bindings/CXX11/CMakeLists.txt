@@ -15,6 +15,7 @@ target_sources(adios2 PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/cxx11/Types.tcc
 	${CMAKE_CURRENT_SOURCE_DIR}/cxx11/Variable.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/cxx11/fstream/ADIOS2fstream.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/cxx11/eco/data_model/StreamSeries.cpp
 )
 
 target_include_directories(adios2
@@ -30,6 +31,11 @@ install(
 install(
   FILES cxx11/fstream/ADIOS2fstream.h 
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cxx11/fstream
+)
+
+install(
+  FILES cxx11/eco/data_model/StreamSeries.h 
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cxx11/eco/data_model
 )
 
 install(

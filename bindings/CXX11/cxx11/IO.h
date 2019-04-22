@@ -36,9 +36,15 @@ class IO; // private implementation
 }
 /// \endcond
 
+namespace eco
+{
+class StreamSeries;
+}
+
 class IO
 {
     friend class ADIOS;
+    friend class eco::StreamSeries;
 
 public:
     /**

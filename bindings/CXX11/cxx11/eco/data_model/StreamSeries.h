@@ -15,9 +15,15 @@
 
 #include <memory>
 
+#ifdef ADIOS2_HAVE_MPI
+#include <mpi.h>
+#endif
+
 #include "cxx11/Engine.h"
 #include "cxx11/IO.h"
 #include "cxx11/Variable.h"
+
+#include "adios2/ADIOSMacros.h"
 
 namespace adios2
 {
@@ -45,6 +51,7 @@ namespace eco
 class StreamSeries
 {
 public:
+#ifdef ADIOS2_HAVE_MPI
     /**
      * Create a StreamSeries object that interfaces adios2 full API
      * @param io to use with full API
@@ -56,9 +63,9 @@ public:
     StreamSeries(adios2::IO &io, const adios2::Mode mode, MPI_Comm comm,
                  const std::string &pattern,
                  const adios2::PatternType patternType);
-
+#endif
     StreamSeries(const StreamSeries &) = delete;
-    StreamSeries(const StreamSeries &&) = default;
+    StreamSeries(StreamSeries &&) = default;
     ~StreamSeries() = default;
 
     StreamSeries &operator=(const StreamSeries &) = delete;
@@ -123,6 +130,45 @@ private:
     std::unique_ptr<data_model::StreamSeries> m_StreamSeries;
     std::unique_ptr<adios2::Engine> m_Engine;
 };
+
+#define declare_template_instantiation(T)                                      \
+                                                                               \
+    extern template void StreamSeries::Put<T>(Variable<T>, const T *,          \
+                                              const Mode);                     \
+    extern template void StreamSeries::Put<T>(const std::string &, const T *,  \
+                                              const Mode);                     \
+                                                                               \
+    extern template void StreamSeries::Put<T>(Variable<T>, const T &,          \
+                                              const Mode);                     \
+    extern template void StreamSeries::Put<T>(const std::string &, const T &,  \
+                                              const Mode);                     \
+                                                                               \
+    extern template void StreamSeries::Get<T>(Variable<T>, T *, const Mode);   \
+    extern template void StreamSeries::Get<T>(const std::string &, T *,        \
+                                              const Mode);                     \
+                                                                               \
+    extern template void StreamSeries::Get<T>(Variable<T>, T &, const Mode);   \
+    extern template void StreamSeries::Get<T>(const std::string &, T &,        \
+                                              const Mode);                     \
+                                                                               \
+    extern template void StreamSeries::Get<T>(Variable<T>, std::vector<T> &,   \
+                                              const Mode);                     \
+                                                                               \
+    extern template void StreamSeries::Get<T>(const std::string &,             \
+                                              std::vector<T> &, const Mode);   \
+                                                                               \
+    extern template std::vector<typename Variable<T>::Info>                    \
+    StreamSeries::BlocksInfo(const Variable<T>) const;
+
+ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
+#undef declare_template_instantiation
+
+#define declare_template_instantiation(T)                                      \
+    extern template typename Variable<T>::Span StreamSeries::Put(              \
+        Variable<T>, const size_t, const T &);
+
+ADIOS2_FOREACH_PRIMITIVE_STDTYPE_1ARG(declare_template_instantiation)
+#undef declare_template_instantiation
 
 } // end namespace eco
 } // end namespace adios2

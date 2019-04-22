@@ -325,7 +325,7 @@ std::string SeriesName(const std::string &pattern, const size_t step,
     std::string name;
     if (patternType == PatternType::Printf)
     {
-        name = lf_Printf(pattern, step);
+        name = lf_Printf(pattern, step, debugMode);
     }
     // TODO other PatternTypes (e.g. regex)
     return name;
@@ -351,7 +351,7 @@ std::string FixedWidth(const std::string &numberStr,
     }
 
     const size_t offset = digitsStr.size() - numberStr.size();
-    std::string fixedWidth(digitsStr.size(), "0");
+    std::string fixedWidth(digitsStr.size(), '0');
     fixedWidth.replace(offset, numberStr.size(), numberStr);
     return fixedWidth;
 }
