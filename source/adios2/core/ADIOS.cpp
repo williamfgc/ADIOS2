@@ -48,6 +48,10 @@
 #include "adios2/operator/compress/CompressBlosc.h"
 #endif
 
+#ifdef ADIOS2_HAVE_ZCHECKER
+#include "adios2/operator/compress/CompressZChecker.h"
+#endif
+
 // callbacks
 #include "adios2/operator/callback/Signature1.h"
 #include "adios2/operator/callback/Signature2.h"
@@ -251,6 +255,37 @@ Operator &ADIOS::DefineOperator(const std::string name, const std::string type,
         throw std::invalid_argument(
             "ERROR: this version of ADIOS2 didn't compile with the "
             "Blosc library, in call to DefineOperator\n");
+#endif
+    }
+    else if (typeLowerCase == "z-checker")
+    {
+#ifdef ADIOS2_HAVE_ZCHECKER
+        if (m_DebugMode && m_Operators.size() != 1)
+        {
+            throw std::invalid_argument("ERROR: z-checker must be defined "
+                                        "after a compression operator, in "
+                                        "call to DefineOperator\n");
+        }
+
+        Operator &op = *m_Operators.end()->second;
+        if (m_DebugMode)
+        {
+            if (op.m_Type == "z-checker")
+            {
+                throw std::invalid_argument(
+                    "ERROR: z-checker operator can only be defined once, in "
+                    "call to DefineOperator\n");
+            }
+        }
+
+        auto itPair = m_Operators.emplace(
+            name, std::make_shared<compress::CompressZChecker>(
+                      parameters, m_DebugMode, op));
+        operatorPtr = itPair.first->second;
+#else
+        throw std::invalid_argument(
+            "ERROR: this version of ADIOS2 didn't compile with the "
+            "z-checker library, in call to DefineOperator\n");
 #endif
     }
     else
