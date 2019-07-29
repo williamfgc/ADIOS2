@@ -212,6 +212,32 @@ std::vector<std::string> File::ReadString(const std::string &name,
                                        blockID);
 }
 
+pybind11::array File::Read(const std::string &name, const size_t stepStart,
+                           const size_t stepCount, const size_t blockID)
+{
+    const std::string type = m_Stream->m_IO->InquireVariableType(name);
+
+    if (type == helper::GetType<std::string>())
+    {
+    }
+#define declare_type(T)                                                        \
+    else if (type == helper::GetType<T>())                                     \
+    {                                                                          \
+        core::Variable<T> &variable =                                          \
+            *m_Stream->m_IO->InquireVariable<T>(name);                         \
+        return DoRead(variable, stepStart, stepCount, blockID);                \
+    }
+    ADIOS2_FOREACH_NUMPY_TYPE_1ARG(declare_type)
+#undef declare_type
+    else
+    {
+        throw std::invalid_argument(
+            "ERROR: adios2 file read variable " + name +
+            ", type can't be mapped to a numpy type, in call to read\n");
+    }
+    return pybind11::array();
+}
+
 pybind11::array File::Read(const std::string &name, const size_t blockID)
 {
     const std::string type = m_Stream->m_IO->InquireVariableType(name);

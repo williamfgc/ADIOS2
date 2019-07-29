@@ -19,6 +19,49 @@ namespace py11
 {
 
 template <class T>
+pybind11::array File::DoRead(core::Variable<T> &variable,
+                             const size_t stepStart, const size_t stepCount,
+                             const size_t blockID)
+{
+    Dims start;
+    Dims count;
+
+    if (variable.m_ShapeID == ShapeID::GlobalArray)
+    {
+        // assumes start,count is constant and it's from shape in stepStart,
+        // if not an exception is thrown
+        count = variable.Shape(stepStart);
+        start = Dims(count.size(), 0);
+
+        return Read(variable.m_Name, start, count, stepStart, stepCount,
+                    blockID);
+    }
+    else if (variable.m_ShapeID == ShapeID::LocalArray)
+    {
+        variable.SetBlockSelection(blockID);
+        // assumes start,count is constant and it's from shape in stepStart,
+        // if not an exception is thrown
+        variable.SetStepSelection({stepStart, stepCount});
+        count = variable.Count();
+        start = Dims(count.size(), 0);
+
+        return Read(variable.m_Name, start, count, stepStart, stepCount,
+                    blockID);
+    }
+    else if (variable.m_ShapeID == ShapeID::GlobalValue)
+    {
+        count = Dims{stepCount};
+        pybind11::array pyArray(pybind11::dtype::of<T>(), count);
+        m_Stream->Read<T>(
+            variable.m_Name,
+            reinterpret_cast<T *>(const_cast<void *>(pyArray.data())),
+            stepStart, stepCount);
+        return pyArray;
+    }
+    return pybind11::array();
+}
+
+template <class T>
 pybind11::array File::DoRead(core::Variable<T> &variable, const size_t blockID)
 {
     Dims start;

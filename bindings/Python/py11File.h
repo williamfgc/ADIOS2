@@ -92,6 +92,9 @@ public:
                                         const size_t stepCount,
                                         const size_t blockID = 0);
 
+    pybind11::array Read(const std::string &name, const size_t stepStart,
+                         const size_t stepCount = 1, const size_t blockID = 0);
+
     pybind11::array Read(const std::string &name, const size_t blockID = 0);
 
     pybind11::array Read(const std::string &name, const Dims &start,
@@ -124,6 +127,10 @@ private:
 
     template <class T>
     pybind11::array DoRead(core::Variable<T> &variable, const size_t blockID);
+
+    template <class T>
+    pybind11::array DoRead(core::Variable<T> &variable, const size_t stepStart,
+                           const size_t stepCount, const size_t blockID);
 };
 
 } // end namespace py11

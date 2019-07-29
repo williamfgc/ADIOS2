@@ -881,6 +881,36 @@ PYBIND11_MODULE(adios2, m)
 
         .def("read",
              (pybind11::array(adios2::py11::File::*)(const std::string &,
+                                                     const size_t, const size_t,
+                                                     const size_t)) &
+                 adios2::py11::File::Read,
+             pybind11::return_value_policy::take_ownership,
+             pybind11::arg("name"), pybind11::arg("step_start"),
+             pybind11::arg("step_count") = 1, pybind11::arg("block_id") = 0,
+             R"md(
+			 Reads global value for a certain step
+             (random access mode only)
+
+			 Parameters
+				 name
+					 string variable name
+
+				 step_start 
+					 variable step start
+
+				 step_count 
+					 variable number of steps to read from step_start
+
+				 block_id
+					 required for local variables
+
+			 Returns
+				 array
+					 data values for a certain step range.
+		)md")
+
+        .def("read",
+             (pybind11::array(adios2::py11::File::*)(const std::string &,
                                                      const size_t)) &
                  adios2::py11::File::Read,
              pybind11::return_value_policy::take_ownership,
