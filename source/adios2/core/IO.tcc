@@ -71,6 +71,17 @@ Variable<T> &IO::DefineVariable(const std::string &name, const Dims &shape,
     return variable;
 }
 
+template <class T, Order order>
+Variable<T> &IO::DefineVariable(const std::string &name, const Dims &shape,
+                                const Dims &start, const Dims &count,
+                                const bool constantDims)
+{
+    Variable<T> &var =
+        DefineVariable<T>(name, shape, start, count, constantDims);
+    var.m_Order = order;
+    return var;
+}
+
 template <class T>
 Variable<T> *IO::InquireVariable(const std::string &name) noexcept
 {

@@ -108,6 +108,12 @@ enum class TimeUnit
     Hours
 };
 
+enum class Order
+{
+    RowMajor,
+    ColumnMajor
+};
+
 /** Type of selection */
 enum class SelectionType
 {

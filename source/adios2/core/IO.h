@@ -189,6 +189,12 @@ public:
                    const Dims &start = Dims(), const Dims &count = Dims(),
                    const bool constantDims = false);
 
+    template <class T, Order order>
+    Variable<T> &
+    DefineVariable(const std::string &name, const Dims &shape = Dims(),
+                   const Dims &start = Dims(), const Dims &count = Dims(),
+                   const bool constantDims = false);
+
     /**
      * @brief Define array attribute
      * @param name must be unique for the IO object
@@ -497,10 +503,22 @@ private:
     extern template Variable<T> &IO::DefineVariable<T>(                        \
         const std::string &, const Dims &, const Dims &, const Dims &,         \
         const bool);                                                           \
+                                                                               \
     extern template Variable<T> *IO::InquireVariable<T>(                       \
         const std::string &name) noexcept;
 
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
+#undef declare_template_instantiation
+
+#define declare_template_instantiation(T)                                      \
+    extern template Variable<T> &IO::DefineVariable<T, Order::RowMajor>(       \
+        const std::string &, const Dims &, const Dims &, const Dims &,         \
+        const bool);                                                           \
+                                                                               \
+    extern template Variable<T> &IO::DefineVariable<T, Order::ColumnMajor>(    \
+        const std::string &, const Dims &, const Dims &, const Dims &,         \
+        const bool);
+ADIOS2_FOREACH_PRIMITIVE_STDTYPE_1ARG(declare_template_instantiation)
 #undef declare_template_instantiation
 
 #define declare_template_instantiation(T)                                      \

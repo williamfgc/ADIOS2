@@ -809,14 +809,27 @@ void IO::CheckTransportType(const std::string type) const
 }
 
 // Explicitly instantiate the necessary public template implementations
-#define define_template_instantiation(T)                                       \
+#define declare_template_instantiation(T)                                      \
     template Variable<T> &IO::DefineVariable<T>(const std::string &,           \
                                                 const Dims &, const Dims &,    \
                                                 const Dims &, const bool);     \
+                                                                               \
     template Variable<T> *IO::InquireVariable<T>(const std::string &) noexcept;
 
-ADIOS2_FOREACH_STDTYPE_1ARG(define_template_instantiation)
-#undef define_template_instatiation
+ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
+#undef declare_template_instantiation
+
+#define declare_template_instantiation(T)                                      \
+    template Variable<T> &IO::DefineVariable<T, Order::RowMajor>(              \
+        const std::string &, const Dims &, const Dims &, const Dims &,         \
+        const bool);                                                           \
+                                                                               \
+    template Variable<T> &IO::DefineVariable<T, Order::ColumnMajor>(           \
+        const std::string &, const Dims &, const Dims &, const Dims &,         \
+        const bool);
+
+ADIOS2_FOREACH_PRIMITIVE_STDTYPE_1ARG(declare_template_instantiation)
+#undef declare_template_instantiation
 
 #define declare_template_instantiation(T)                                      \
     template Attribute<T> &IO::DefineAttribute<T>(                             \

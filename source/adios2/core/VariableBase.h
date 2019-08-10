@@ -53,6 +53,7 @@ public:
     Dims m_Shape;               ///< total dimensions across MPI
     Dims m_Start;               ///< starting point (offsets) in global shape
     Dims m_Count;               ///< dimensions from m_Start in global shape
+    Order m_Order;              ///< data layout order
 
     Dims m_MemoryStart; ///< start offset
     Dims m_MemoryCount; ///< local dimensions
