@@ -295,18 +295,18 @@ inline void BP4Base::ParseCharacteristics(const std::vector<char> &buffer,
                 helper::ReadValue<T>(buffer, position, isLittleEndian);
             if (M > 1)
             {
-                characteristics.Statistics.SubblockInfo.divisionMethod =
+                characteristics.Statistics.SubBlockInfo.DivisionMethod =
                     static_cast<helper::BlockDivisionMethod>(
                         helper::ReadValue<uint8_t>(buffer, position,
                                                    isLittleEndian));
-                characteristics.Statistics.SubblockInfo.subblockSize =
+                characteristics.Statistics.SubBlockInfo.SubBlockSize =
                     helper::ReadValue<size_t>(buffer, position, isLittleEndian);
 
-                characteristics.Statistics.SubblockInfo.div.resize(
+                characteristics.Statistics.SubBlockInfo.Div.resize(
                     dimensionsSize);
                 for (int d = 0; d < dimensionsSize; ++d)
                 {
-                    characteristics.Statistics.SubblockInfo.div[d] =
+                    characteristics.Statistics.SubBlockInfo.Div[d] =
                         helper::ReadValue<uint16_t>(buffer, position,
                                                     isLittleEndian);
                 }

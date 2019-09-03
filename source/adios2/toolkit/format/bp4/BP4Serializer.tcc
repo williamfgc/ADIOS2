@@ -44,7 +44,7 @@ inline void BP4Serializer::PutVariableMetadata(
         }
     };
 
-    ProfilerStart("buffering");
+    m_Profiler.Start("buffering");
 
     Stats<T> stats =
         GetBPStats<T>(variable.m_SingleValue, blockInfo, sourceRowMajor);
@@ -78,7 +78,7 @@ inline void BP4Serializer::PutVariableMetadata(
                                variableIndex);
     ++m_MetadataSet.DataPGVarsCount;
 
-    ProfilerStop("buffering");
+    m_Profiler.Stop("buffering");
 }
 
 template <class T>
@@ -87,7 +87,7 @@ inline void BP4Serializer::PutVariablePayload(
     const typename core::Variable<T>::Info &blockInfo,
     const bool sourceRowMajor) noexcept
 {
-    ProfilerStart("buffering");
+    m_Profiler.Start("buffering");
     if (blockInfo.Operations.empty())
     {
         PutPayloadInBuffer(variable, blockInfo, sourceRowMajor);
@@ -119,7 +119,7 @@ inline void BP4Serializer::PutVariablePayload(
               << std::string(m_Data.m_Buffer.data() + startingPos - 4, 4) << "'"
               << std::endl;*/
 
-    ProfilerStop("buffering");
+    m_Profiler.Stop("buffering");
 }
 
 // PRIVATE
@@ -440,9 +440,9 @@ BP4Serializer::GetBPStats(const bool singleValue,
         return stats;
     }
 
-    if (m_StatsLevel > 0)
+    if (m_Parameters.StatsLevel > 0)
     {
-        ProfilerStart("minmax");
+        m_Profiler.Start("minmax");
         if (!blockInfo.MemoryStart.empty())
         {
             // non-contiguous memory min/max
@@ -452,14 +452,14 @@ BP4Serializer::GetBPStats(const bool singleValue,
         }
         else
         {
-            stats.SubblockInfo =
-                helper::DivideBlock(blockInfo.Count, m_StatsBlockSize,
-                                    helper::BlockDivisionMethod::Contiguous);
-            helper::GetMinMaxSubblocks(blockInfo.Data, blockInfo.Count,
-                                       stats.SubblockInfo, stats.MinMaxs,
-                                       stats.Min, stats.Max, m_Threads);
+            stats.SubBlockInfo = helper::DivideBlock(
+                blockInfo.Count, m_Parameters.StatsBlockSize,
+                helper::BlockDivisionMethod::Contiguous);
+            helper::GetMinMaxSubblocks(
+                blockInfo.Data, blockInfo.Count, stats.SubBlockInfo,
+                stats.MinMaxs, stats.Min, stats.Max, m_Parameters.Threads);
         }
-        ProfilerStop("minmax");
+        m_Profiler.Stop("minmax");
     }
 
     return stats;
@@ -630,7 +630,7 @@ void BP4Serializer::PutVariableMetadataInIndex(
         stats.Step) // create a new variable header for a new step
     {
         size_t indexLengthPosition = buffer.size();
-        index.currentHeaderPosition = buffer.size();
+        index.CurrentHeaderPosition = buffer.size();
 
         buffer.insert(buffer.end(), 4, '\0'); // skip var length (4)
         helper::InsertToBuffer(buffer, &stats.MemberID);
@@ -670,20 +670,20 @@ void BP4Serializer::PutVariableMetadataInIndex(
         uint32_t currentIndexLength =
             static_cast<uint32_t>(buffer.size() - currentIndexStartPosition);
 
-        size_t localPosition = index.currentHeaderPosition;
+        size_t localPosition = index.CurrentHeaderPosition;
         uint32_t preIndexLength = helper::ReadValue<uint32_t>(
             buffer, localPosition, helper::IsLittleEndian());
 
         uint32_t newIndexLength = preIndexLength + currentIndexLength;
 
         localPosition =
-            index.currentHeaderPosition; // back to beginning of the header
+            index.CurrentHeaderPosition; // back to beginning of the header
         helper::CopyToBuffer(buffer, localPosition, &newIndexLength);
 
         ++index.Count;
         // fixed since group and path are not printed
         size_t setsCountPosition =
-            index.currentHeaderPosition + 15 + variable.m_Name.size();
+            index.CurrentHeaderPosition + 15 + variable.m_Name.size();
         helper::CopyToBuffer(buffer, setsCountPosition, &index.Count);
     }
 
@@ -726,7 +726,7 @@ void BP4Serializer::PutBoundsRecord(const bool singleValue,
     }
     else
     {
-        if (m_StatsLevel > 0) // default verbose
+        if (m_Parameters.StatsLevel > 0) // default verbose
         {
             // Record entire Min-Max subblock arrays
             const uint8_t id = characteristic_minmax;
@@ -743,14 +743,14 @@ void BP4Serializer::PutBoundsRecord(const bool singleValue,
             if (M > 1)
             {
                 uint8_t method =
-                    static_cast<uint8_t>(stats.SubblockInfo.divisionMethod);
+                    static_cast<uint8_t>(stats.SubBlockInfo.DivisionMethod);
                 helper::InsertToBuffer(buffer, &method);
                 helper::InsertToBuffer(buffer,
-                                       &stats.SubblockInfo.subblockSize);
+                                       &stats.SubBlockInfo.SubBlockSize);
 
                 const uint16_t N =
-                    static_cast<uint16_t>(stats.SubblockInfo.div.size());
-                for (auto const d : stats.SubblockInfo.div)
+                    static_cast<uint16_t>(stats.SubBlockInfo.Div.size());
+                for (auto const d : stats.SubBlockInfo.Div)
                 {
                     helper::InsertToBuffer(buffer, &d);
                 }
@@ -779,7 +779,7 @@ void BP4Serializer::PutBoundsRecord(const bool singleValue,
     }
     else
     {
-        if (m_StatsLevel > 0) // default min and max only
+        if (m_Parameters.StatsLevel > 0) // default min and max only
         {
             // Record entire Min-Max subblock arrays
             const uint8_t id = characteristic_minmax;
@@ -796,14 +796,14 @@ void BP4Serializer::PutBoundsRecord(const bool singleValue,
             if (M > 1)
             {
                 uint8_t method =
-                    static_cast<uint8_t>(stats.SubblockInfo.divisionMethod);
+                    static_cast<uint8_t>(stats.SubBlockInfo.DivisionMethod);
                 helper::CopyToBuffer(buffer, position, &method);
                 helper::CopyToBuffer(buffer, position,
-                                     &stats.SubblockInfo.subblockSize);
+                                     &stats.SubBlockInfo.SubBlockSize);
 
                 const uint16_t N =
-                    static_cast<uint16_t>(stats.SubblockInfo.div.size());
-                for (auto const d : stats.SubblockInfo.div)
+                    static_cast<uint16_t>(stats.SubBlockInfo.Div.size());
+                for (auto const d : stats.SubBlockInfo.Div)
                 {
                     helper::CopyToBuffer(buffer, position, &d);
                 }
@@ -1021,7 +1021,7 @@ void BP4Serializer::PutPayloadInBuffer(
     const bool sourceRowMajor) noexcept
 {
     const size_t blockSize = helper::GetTotalSize(blockInfo.Count);
-    ProfilerStart("memcpy");
+    m_Profiler.Start("memcpy");
     if (!blockInfo.MemoryStart.empty())
     {
         // TODO make it a BP4Serializer function
@@ -1035,9 +1035,10 @@ void BP4Serializer::PutPayloadInBuffer(
     else
     {
         helper::CopyToBufferThreads(m_Data.m_Buffer, m_Data.m_Position,
-                                    blockInfo.Data, blockSize, m_Threads);
+                                    blockInfo.Data, blockSize,
+                                    m_Parameters.Threads);
     }
-    ProfilerStop("memcpy");
+    m_Profiler.Stop("memcpy");
     m_Data.m_AbsolutePosition += blockSize * sizeof(T); // payload size
 }
 
@@ -1208,7 +1209,7 @@ void BP4Serializer::PutCharacteristicOperation(
 {
     // TODO: we only take the first operation for now
     const std::map<size_t, std::shared_ptr<BPOperation>> bpOperations =
-        SetBPOperations<T>(blockInfo.Operations);
+        SetBPOperations(blockInfo.Operations);
 
     const size_t operationIndex = bpOperations.begin()->first;
     std::shared_ptr<BPOperation> bp4Operation = bpOperations.begin()->second;
@@ -1241,7 +1242,7 @@ void BP4Serializer::PutOperationPayloadInBuffer(
 {
     // TODO: we only take the first operation for now
     const std::map<size_t, std::shared_ptr<BPOperation>> bpOperations =
-        SetBPOperations<T>(blockInfo.Operations);
+        SetBPOperations(blockInfo.Operations);
 
     const size_t operationIndex = bpOperations.begin()->first;
     const std::shared_ptr<BPOperation> bpOperation =

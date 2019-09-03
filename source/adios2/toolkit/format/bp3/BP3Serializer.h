@@ -157,10 +157,10 @@ private:
     /** aggregate pg rank indices */
     std::vector<char> m_PGRankIndices;
     /** deserialized variable indices per rank (vector index) */
-    std::unordered_map<std::string, std::vector<SerialElementIndex>>
+    std::unordered_map<std::string, std::vector<BPBase::SerialElementIndex>>
         m_VariableRankIndices;
     /** deserialized attribute indices per rank (vector index) */
-    std::unordered_map<std::string, std::vector<SerialElementIndex>>
+    std::unordered_map<std::string, std::vector<BPBase::SerialElementIndex>>
         m_AttributesRankIndices;
 
     /**
@@ -246,7 +246,8 @@ private:
     void PutVariableMetadataInIndex(
         const core::Variable<T> &variable,
         const typename core::Variable<T>::Info &blockInfo,
-        const Stats<T> &stats, const bool isNew, SerialElementIndex &index,
+        const Stats<T> &stats, const bool isNew,
+        BPBase::SerialElementIndex &index,
         typename core::Variable<T>::Span *span) noexcept;
 
     template <class T>

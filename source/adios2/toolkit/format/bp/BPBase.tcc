@@ -2,20 +2,18 @@
  * Distributed under the OSI-approved Apache License, Version 2.0.  See
  * accompanying file Copyright.txt for details.
  *
- * BP3Base.tcc
+ * BPBase.tcc
  *
- *  Created on: May 19, 2017
+ *  Created on: Sep 3, 2019
  *      Author: William F Godoy godoywf@ornl.gov
  */
 
-#ifndef ADIOS2_TOOLKIT_FORMAT_BP3_BP3BASE_TCC_
-#define ADIOS2_TOOLKIT_FORMAT_BP3_BP3BASE_TCC_
+#ifndef ADIOS2_TOOLKIT_FORMAT_BP_BPBASE_TCC_
+#define ADIOS2_TOOLKIT_FORMAT_BP_BPBASE_TCC_
 
-#include "BP3Base.h"
+#include "BPBase.h"
 
 #include <algorithm> //std::all_of
-
-#include "adios2/helper/adiosFunctions.h" //NextExponentialSize, helper::CopyFromBuffer
 
 namespace adios2
 {
@@ -25,7 +23,7 @@ namespace format
 // PROTECTED
 
 template <class T>
-BP3Base::Characteristics<T> BP3Base::ReadElementIndexCharacteristics(
+BPBase::Characteristics<T> BPBase::ReadElementIndexCharacteristics(
     const std::vector<char> &buffer, size_t &position, const DataTypes dataType,
     const bool untilTimeStep, const bool isLittleEndian) const
 {
@@ -41,11 +39,13 @@ BP3Base::Characteristics<T> BP3Base::ReadElementIndexCharacteristics(
     return characteristics;
 }
 
+// String specialization
 template <>
-inline void BP3Base::ParseCharacteristics(
-    const std::vector<char> &buffer, size_t &position, const DataTypes dataType,
-    const bool untilTimeStep, Characteristics<std::string> &characteristics,
-    const bool isLittleEndian) const
+inline void
+BPBase::ParseCharacteristics(const std::vector<char> &buffer, size_t &position,
+                             const DataTypes dataType, const bool untilTimeStep,
+                             Characteristics<std::string> &characteristics,
+                             const bool isLittleEndian) const
 {
     const size_t start = position;
     size_t localPosition = 0;
@@ -80,7 +80,7 @@ inline void BP3Base::ParseCharacteristics(
             {
                 // first get the length of the string
                 characteristics.Statistics.Value =
-                    ReadBP3String(buffer, position, isLittleEndian);
+                    ReadBPString(buffer, position, isLittleEndian);
                 characteristics.Statistics.IsValue = true;
             }
             else if (dataType == type_string_array)
@@ -190,17 +190,18 @@ inline void BP3Base::ParseCharacteristics(
 }
 
 template <class T>
-inline void BP3Base::ParseCharacteristics(const std::vector<char> &buffer,
-                                          size_t &position,
-                                          const DataTypes /*dataType*/,
-                                          const bool untilTimeStep,
-                                          Characteristics<T> &characteristics,
-                                          const bool isLittleEndian) const
+inline void BPBase::ParseCharacteristics(const std::vector<char> &buffer,
+                                         size_t &position,
+                                         const DataTypes /*dataType*/,
+                                         const bool untilTimeStep,
+                                         Characteristics<T> &characteristics,
+                                         const bool isLittleEndian) const
 {
     const size_t start = position;
     size_t localPosition = 0;
 
     bool foundTimeStep = false;
+    size_t dimensionsSize = 0; // get it from dimensions characteristics
 
     while (localPosition < characteristics.EntryLength)
     {
@@ -232,7 +233,10 @@ inline void BP3Base::ParseCharacteristics(const std::vector<char> &buffer,
                 characteristics.Statistics.Value =
                     helper::ReadValue<T>(buffer, position, isLittleEndian);
                 characteristics.Statistics.IsValue = true;
-                characteristics.EntryShapeID = ShapeID::GlobalValue;
+                if (characteristics.EntryShapeID == ShapeID::Unknown)
+                {
+                    characteristics.EntryShapeID = ShapeID::GlobalValue;
+                }
                 // adding Min Max for global and local values
                 characteristics.Statistics.Min =
                     characteristics.Statistics.Value;
@@ -243,8 +247,8 @@ inline void BP3Base::ParseCharacteristics(const std::vector<char> &buffer,
             {
                 const size_t size = characteristics.Count[0];
                 characteristics.Statistics.Values.resize(size);
-#ifdef ADIOS2_HAVE_ENDIAN_REVERSE
 
+#ifdef ADIOS2_HAVE_ENDIAN_REVERSE
                 if (helper::IsLittleEndian() != isLittleEndian)
                 {
                     helper::ReverseCopyFromBuffer(
@@ -280,6 +284,41 @@ inline void BP3Base::ParseCharacteristics(const std::vector<char> &buffer,
             break;
         }
 
+        case (characteristic_minmax):
+        {
+            // first get the number of subblocks
+            const uint16_t subBlocks =
+                helper::ReadValue<uint16_t>(buffer, position);
+            // block-level min/max
+            characteristics.Statistics.Min =
+                helper::ReadValue<T>(buffer, position, isLittleEndian);
+            characteristics.Statistics.Max =
+                helper::ReadValue<T>(buffer, position, isLittleEndian);
+            if (subBlocks > 1)
+            {
+                characteristics.Statistics.SubBlockInfo.DivisionMethod =
+                    static_cast<helper::BlockDivisionMethod>(
+                        helper::ReadValue<uint8_t>(buffer, position,
+                                                   isLittleEndian));
+                characteristics.Statistics.SubBlockInfo.SubBlockSize =
+                    helper::ReadValue<size_t>(buffer, position, isLittleEndian);
+
+                characteristics.Statistics.SubBlockInfo.Div.resize(
+                    dimensionsSize);
+                for (size_t d = 0; d < dimensionsSize; ++d)
+                {
+                    characteristics.Statistics.SubBlockInfo.Div[d] =
+                        helper::ReadValue<uint16_t>(buffer, position,
+                                                    isLittleEndian);
+                }
+                characteristics.Statistics.MinMaxs.resize(2 * subBlocks);
+                helper::ReadArray<T>(buffer, position,
+                                     characteristics.Statistics.MinMaxs.data(),
+                                     2 * subBlocks, isLittleEndian);
+            }
+            break;
+        }
+
         case (characteristic_offset):
         {
             characteristics.Statistics.Offset =
@@ -302,7 +341,7 @@ inline void BP3Base::ParseCharacteristics(const std::vector<char> &buffer,
                     [](const size_t dimension) { return dimension == 0; });
             };
 
-            const size_t dimensionsSize = static_cast<size_t>(
+            dimensionsSize = static_cast<size_t>(
                 helper::ReadValue<uint8_t>(buffer, position, isLittleEndian));
 
             characteristics.Shape.reserve(dimensionsSize);
@@ -363,12 +402,14 @@ inline void BP3Base::ParseCharacteristics(const std::vector<char> &buffer,
 
             break;
         }
+
         case (characteristic_bitmap):
         {
             characteristics.Statistics.Bitmap = std::bitset<32>(
                 helper::ReadValue<uint32_t>(buffer, position, isLittleEndian));
             break;
         }
+
         case (characteristic_stat):
         {
             if (characteristics.Statistics.Bitmap.none())
@@ -424,7 +465,7 @@ inline void BP3Base::ParseCharacteristics(const std::vector<char> &buffer,
                 case (statistic_hist):
                 {
                     throw std::invalid_argument(
-                        "ERROR: ADIOS2 default BP3 engine doesn't support "
+                        "ERROR: ADIOS2 default engine doesn't support "
                         "histogram statistics\n");
                 }
                 case (statistic_cnt):
@@ -435,9 +476,10 @@ inline void BP3Base::ParseCharacteristics(const std::vector<char> &buffer,
                 }
 
                 } // switch
-            }     // for
+            }     // for statistic
             break;
         }
+
         case (characteristic_transform_type):
         {
             const size_t typeLength = static_cast<size_t>(
@@ -483,6 +525,7 @@ inline void BP3Base::ParseCharacteristics(const std::vector<char> &buffer,
             characteristics.Statistics.Op.IsActive = true;
             break;
         }
+
         default:
         {
             throw std::invalid_argument("ERROR: characteristic ID " +
@@ -490,7 +533,7 @@ inline void BP3Base::ParseCharacteristics(const std::vector<char> &buffer,
                                         " not supported\n");
         }
 
-        } // end id switch
+        } // end switch
 
         if (untilTimeStep && foundTimeStep)
         {
@@ -498,29 +541,11 @@ inline void BP3Base::ParseCharacteristics(const std::vector<char> &buffer,
         }
 
         localPosition = position - start;
-    }
-}
 
-template <class T>
-std::map<size_t, std::shared_ptr<BPOperation>> BP3Base::SetBPOperations(
-    const std::vector<core::VariableBase::Operation> &operations) const
-{
-    std::map<size_t, std::shared_ptr<BPOperation>> bpOperations;
-
-    for (size_t i = 0; i < operations.size(); ++i)
-    {
-        const std::string type = operations[i].Op->m_Type;
-        std::shared_ptr<BPOperation> bp3Operation = SetBPOperation(type);
-
-        if (bp3Operation) // if the result is a supported type
-        {
-            bpOperations.emplace(i, bp3Operation);
-        }
-    }
-    return bpOperations;
+    } // end while
 }
 
 } // end namespace format
 } // end namespace adios2
 
-#endif /* ADIOS2_TOOLKIT_FORMAT_BP3_BP3Base_TCC_ */
+#endif /* ADIOS2_TOOLKIT_FORMAT_BP3_BP3BASE_TCC_ */

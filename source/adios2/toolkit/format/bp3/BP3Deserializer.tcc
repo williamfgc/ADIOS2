@@ -134,24 +134,24 @@ void BP3Deserializer::SetVariableBlockInfo(
     typename core::Variable<T>::Info &blockInfo) const
 {
     auto lf_SetSubStreamInfoOperations =
-        [&](const BP3OpInfo &bp3OpInfo, const size_t payloadOffset,
+        [&](const BPOpInfo &bpOpInfo, const size_t payloadOffset,
             helper::SubStreamBoxInfo &subStreamInfo, const bool isRowMajor)
 
     {
         helper::BlockOperationInfo blockOperation;
         blockOperation.PayloadOffset = payloadOffset;
-        blockOperation.PreShape = bp3OpInfo.PreShape;
-        blockOperation.PreStart = bp3OpInfo.PreStart;
-        blockOperation.PreCount = bp3OpInfo.PreCount;
+        blockOperation.PreShape = bpOpInfo.PreShape;
+        blockOperation.PreStart = bpOpInfo.PreStart;
+        blockOperation.PreCount = bpOpInfo.PreCount;
         blockOperation.Info["PreDataType"] = helper::GetType<T>();
         // TODO: need to verify it's a match with PreDataType
         // std::to_string(static_cast<size_t>(bp3OpInfo.PreDataType));
-        blockOperation.Info["Type"] = bp3OpInfo.Type;
+        blockOperation.Info["Type"] = bpOpInfo.Type;
         blockOperation.PreSizeOf = sizeof(T);
 
         // read metadata from supported type and populate Info
-        std::shared_ptr<BPOperation> bpOp = SetBPOperation(bp3OpInfo.Type);
-        bpOp->GetMetadata(bp3OpInfo.Metadata, blockOperation.Info);
+        std::shared_ptr<BPOperation> bpOp = SetBPOperation(bpOpInfo.Type);
+        bpOp->GetMetadata(bpOpInfo.Metadata, blockOperation.Info);
         blockOperation.PayloadSize = static_cast<size_t>(
             std::stoull(blockOperation.Info.at("OutputSize")));
 
@@ -255,12 +255,12 @@ void BP3Deserializer::SetVariableBlockInfo(
         const size_t payloadOffset =
             blockCharacteristics.Statistics.PayloadOffset;
 
-        const BP3OpInfo &bp3Op = blockCharacteristics.Statistics.Op;
+        const BPOpInfo &bpOp = blockCharacteristics.Statistics.Op;
         // if they intersect get info Seeks (first: start, second:
         // count) depending on operation info
-        if (bp3Op.IsActive)
+        if (bpOp.IsActive)
         {
-            lf_SetSubStreamInfoOperations(bp3Op, payloadOffset, subStreamInfo,
+            lf_SetSubStreamInfoOperations(bpOp, payloadOffset, subStreamInfo,
                                           m_IsRowMajor);
         }
         else

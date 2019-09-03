@@ -28,7 +28,7 @@ void BP3Serializer::PutVariableMetadata(
     const typename core::Variable<T>::Info &blockInfo,
     const bool sourceRowMajor, typename core::Variable<T>::Span *span) noexcept
 {
-    ProfilerStart("buffering");
+    m_Profiler.Start("buffering");
 
     Stats<T> stats =
         GetBPStats<T>(variable.m_SingleValue, blockInfo, sourceRowMajor);
@@ -52,7 +52,7 @@ void BP3Serializer::PutVariableMetadata(
                                span);
     ++m_MetadataSet.DataPGVarsCount;
 
-    ProfilerStop("buffering");
+    m_Profiler.Stop("buffering");
 }
 
 template <class T>
@@ -61,7 +61,7 @@ inline void BP3Serializer::PutVariablePayload(
     const typename core::Variable<T>::Info &blockInfo,
     const bool sourceRowMajor, typename core::Variable<T>::Span *span) noexcept
 {
-    ProfilerStart("buffering");
+    m_Profiler.Start("buffering");
     if (span != nullptr)
     {
         const size_t blockSize = helper::GetTotalSize(blockInfo.Count);
@@ -84,7 +84,7 @@ inline void BP3Serializer::PutVariablePayload(
 
         m_Data.m_Position += blockSize * sizeof(T);
         m_Data.m_AbsolutePosition += blockSize * sizeof(T);
-        ProfilerStop("buffering");
+        m_Profiler.Stop("buffering");
         return;
     }
 
@@ -97,7 +97,7 @@ inline void BP3Serializer::PutVariablePayload(
         PutOperationPayloadInBuffer(variable, blockInfo);
     }
 
-    ProfilerStop("buffering");
+    m_Profiler.Stop("buffering");
 }
 
 template <class T>
@@ -105,13 +105,14 @@ void BP3Serializer::PutSpanMetadata(
     const core::Variable<T> &variable,
     const typename core::Variable<T>::Span &span) noexcept
 {
-    if (m_StatsLevel == 0)
+    if (m_Parameters.StatsLevel > 0)
     {
         // Get Min/Max from populated data
-        ProfilerStart("minmax");
+        m_Profiler.Start("minmax");
         T min, max;
-        helper::GetMinMaxThreads(span.Data(), span.Size(), min, max, m_Threads);
-        ProfilerStop("minmax");
+        helper::GetMinMaxThreads(span.Data(), span.Size(), min, max,
+                                 m_Parameters.Threads);
+        m_Profiler.Stop("minmax");
 
         // Put min/max in variable index
         SerialElementIndex &variableIndex =
@@ -425,15 +426,15 @@ BP3Serializer::GetBPStats(const bool singleValue,
         return stats;
     }
 
-    if (m_StatsLevel == 0)
+    if (m_Parameters.StatsLevel > 0)
     {
-        ProfilerStart("minmax");
+        m_Profiler.Start("minmax");
         if (blockInfo.MemoryStart.empty())
         {
             const std::size_t valuesSize =
                 helper::GetTotalSize(blockInfo.Count);
             helper::GetMinMaxThreads(blockInfo.Data, valuesSize, stats.Min,
-                                     stats.Max, m_Threads);
+                                     stats.Max, m_Parameters.Threads);
         }
         else // non-contiguous memory min/max
         {
@@ -441,7 +442,7 @@ BP3Serializer::GetBPStats(const bool singleValue,
                                        blockInfo.MemoryStart, blockInfo.Count,
                                        isRowMajor, stats.Min, stats.Max);
         }
-        ProfilerStop("minmax");
+        m_Profiler.Stop("minmax");
     }
 
     return stats;
@@ -575,7 +576,7 @@ void BP3Serializer::PutVariableMetadataInIndex(
     }
     else // update characteristics sets count
     {
-        if (m_StatsLevel == 0)
+        if (m_Parameters.StatsLevel > 0)
         {
             ++index.Count;
             // fixed since group and path are not printed
@@ -600,7 +601,7 @@ void BP3Serializer::PutBoundsRecord(const bool singleValue,
     }
     else
     {
-        if (m_StatsLevel == 0) // default verbose
+        if (m_Parameters.StatsLevel > 0) // default verbose
         {
             PutCharacteristicRecord(characteristic_min, characteristicsCounter,
                                     stats.Min, buffer);
@@ -629,7 +630,7 @@ void BP3Serializer::PutBoundsRecord(const bool singleValue,
     }
     else
     {
-        if (m_StatsLevel == 0) // default min and max only
+        if (m_Parameters.StatsLevel > 0) // default min and max only
         {
             PutCharacteristicRecord(characteristic_min, characteristicsCounter,
                                     stats.Min, buffer, position);
@@ -741,7 +742,7 @@ void BP3Serializer::PutVariableCharacteristics(
 
     if (blockInfo.Data != nullptr || span != nullptr)
     {
-        if (m_StatsLevel == 0 && span != nullptr)
+        if (m_Parameters.StatsLevel > 0 && span != nullptr)
         {
             span->m_MinMaxMetadataPositions.first = buffer.size() + 1;
             span->m_MinMaxMetadataPositions.second =
@@ -859,7 +860,7 @@ void BP3Serializer::PutPayloadInBuffer(
     const bool sourceRowMajor) noexcept
 {
     const size_t blockSize = helper::GetTotalSize(blockInfo.Count);
-    ProfilerStart("memcpy");
+    m_Profiler.Start("memcpy");
     if (!blockInfo.MemoryStart.empty())
     {
         helper::CopyMemoryBlock(
@@ -872,9 +873,10 @@ void BP3Serializer::PutPayloadInBuffer(
     else
     {
         helper::CopyToBufferThreads(m_Data.m_Buffer, m_Data.m_Position,
-                                    blockInfo.Data, blockSize, m_Threads);
+                                    blockInfo.Data, blockSize,
+                                    m_Parameters.Threads);
     }
-    ProfilerStop("memcpy");
+    m_Profiler.Stop("memcpy");
     m_Data.m_AbsolutePosition += blockSize * sizeof(T); // payload size
 }
 
@@ -1034,7 +1036,7 @@ void BP3Serializer::PutCharacteristicOperation(
 {
     // TODO: we only take the first operation for now
     const std::map<size_t, std::shared_ptr<BPOperation>> bpOperations =
-        SetBPOperations<T>(blockInfo.Operations);
+        SetBPOperations(blockInfo.Operations);
 
     const size_t operationIndex = bpOperations.begin()->first;
     std::shared_ptr<BPOperation> bpOperation = bpOperations.begin()->second;
@@ -1067,7 +1069,7 @@ void BP3Serializer::PutOperationPayloadInBuffer(
 {
     // TODO: we only take the first operation for now
     const std::map<size_t, std::shared_ptr<BPOperation>> bpOperations =
-        SetBPOperations<T>(blockInfo.Operations);
+        SetBPOperations(blockInfo.Operations);
 
     const size_t operationIndex = bpOperations.begin()->first;
     const std::shared_ptr<BPOperation> bpOperation =

@@ -135,24 +135,24 @@ void BP4Deserializer::SetVariableBlockInfo(
     typename core::Variable<T>::Info &blockInfo) const
 {
     auto lf_SetSubStreamInfoOperations =
-        [&](const BP4OpInfo &bp4OpInfo, const size_t payloadOffset,
+        [&](const BPOpInfo &bpOpInfo, const size_t payloadOffset,
             helper::SubStreamBoxInfo &subStreamInfo, const bool isRowMajor)
 
     {
         helper::BlockOperationInfo blockOperation;
         blockOperation.PayloadOffset = payloadOffset;
-        blockOperation.PreShape = bp4OpInfo.PreShape;
-        blockOperation.PreStart = bp4OpInfo.PreStart;
-        blockOperation.PreCount = bp4OpInfo.PreCount;
+        blockOperation.PreShape = bpOpInfo.PreShape;
+        blockOperation.PreStart = bpOpInfo.PreStart;
+        blockOperation.PreCount = bpOpInfo.PreCount;
         blockOperation.Info["PreDataType"] = helper::GetType<T>();
         // TODO: need to verify it's a match with PreDataType
         // std::to_string(static_cast<size_t>(bp4OpInfo.PreDataType));
-        blockOperation.Info["Type"] = bp4OpInfo.Type;
+        blockOperation.Info["Type"] = bpOpInfo.Type;
         blockOperation.PreSizeOf = sizeof(T);
 
         // read metadata from supported type and populate Info
-        std::shared_ptr<BPOperation> bpOp = SetBPOperation(bp4OpInfo.Type);
-        bpOp->GetMetadata(bp4OpInfo.Metadata, blockOperation.Info);
+        std::shared_ptr<BPOperation> bpOp = SetBPOperation(bpOpInfo.Type);
+        bpOp->GetMetadata(bpOpInfo.Metadata, blockOperation.Info);
         blockOperation.PayloadSize = static_cast<size_t>(
             std::stoull(blockOperation.Info.at("OutputSize")));
 
@@ -256,12 +256,12 @@ void BP4Deserializer::SetVariableBlockInfo(
         const size_t payloadOffset =
             blockCharacteristics.Statistics.PayloadOffset;
 
-        const BP4OpInfo &bp4Op = blockCharacteristics.Statistics.Op;
+        const BPOpInfo &bpOp = blockCharacteristics.Statistics.Op;
         // if they intersect get info Seeks (first: start, second:
         // count) depending on operation info
-        if (bp4Op.IsActive)
+        if (bpOp.IsActive)
         {
-            lf_SetSubStreamInfoOperations(bp4Op, payloadOffset, subStreamInfo,
+            lf_SetSubStreamInfoOperations(bpOp, payloadOffset, subStreamInfo,
                                           m_IsRowMajor);
         }
         else
@@ -1195,7 +1195,7 @@ std::vector<typename core::Variable<T>::Info> BP4Deserializer::BlocksInfoCommon(
             blockInfo.Max = blockCharacteristics.Statistics.Max;
             blockInfo.MinMaxs = blockCharacteristics.Statistics.MinMaxs;
             blockInfo.SubBlockInfo =
-                blockCharacteristics.Statistics.SubblockInfo;
+                blockCharacteristics.Statistics.SubBlockInfo;
         }
         if (blockInfo.Shape.size() == 1 &&
             blockInfo.Shape.front() == LocalValueDim)
@@ -1210,9 +1210,7 @@ std::vector<typename core::Variable<T>::Info> BP4Deserializer::BlocksInfoCommon(
         blockInfo.Step =
             static_cast<size_t>(blockCharacteristics.Statistics.Step - 1);
         blockInfo.BlockID = n;
-
         blocksInfo.push_back(blockInfo);
-
         ++n;
     }
     return blocksInfo;

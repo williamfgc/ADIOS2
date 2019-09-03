@@ -2,14 +2,14 @@
  * Distributed under the OSI-approved Apache License, Version 2.0.  See
  * accompanying file Copyright.txt for details.
  *
- * BP3Operation.tcc
+ * BPOperation.tcc
  *
  *  Created on: Jun 11, 2019
  *      Author: William F Godoy godoywf@ornl.gov
  */
 
-#ifndef ADIOS2_TOOLKIT_FORMAT_BP3_OPERATION_BP3OPERATION_TCC_
-#define ADIOS2_TOOLKIT_FORMAT_BP3_OPERATION_BP3OPERATION_TCC_
+#ifndef ADIOS2_TOOLKIT_FORMAT_BP_BPOPERATION_BPOPERATION_TCC_
+#define ADIOS2_TOOLKIT_FORMAT_BP_BPOPERATION_BPOPERATION_TCC_
 
 #include "BPOperation.h"
 
@@ -87,4 +87,4 @@ void BPOperation::UpdateMetadataDefault(
 } // end namespace format
 } // end namespace adios2
 
-#endif /* ADIOS2_TOOLKIT_FORMAT_BP3_OPERATION_BP3OPERATION_TCC_ */
+#endif /* ADIOS2_TOOLKIT_FORMAT_BP_BPOPERATION_BPOPERATION_TCC_ */

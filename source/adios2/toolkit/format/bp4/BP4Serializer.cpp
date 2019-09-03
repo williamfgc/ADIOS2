@@ -148,7 +148,7 @@ void BP4Serializer::PutProcessGroupIndex(
     const std::string &ioName, const std::string hostLanguage,
     const std::vector<std::string> &transportsTypes) noexcept
 {
-    ProfilerStart("buffering");
+    m_Profiler.Start("buffering");
     std::vector<char> &metadataBuffer = m_MetadataSet.PGIndex.Buffer;
 
     std::vector<char> &dataBuffer = m_Data.m_Buffer;
@@ -231,24 +231,24 @@ void BP4Serializer::PutProcessGroupIndex(
     ++m_MetadataSet.DataPGCount;
     m_MetadataSet.DataPGIsOpen = true;
 
-    ProfilerStop("buffering");
+    m_Profiler.Stop("buffering");
 }
 
 void BP4Serializer::SerializeData(core::IO &io, const bool advanceStep)
 {
-    ProfilerStart("buffering");
+    m_Profiler.Start("buffering");
     SerializeDataBuffer(io);
     if (advanceStep)
     {
         ++m_MetadataSet.TimeStep;
         ++m_MetadataSet.CurrentStep;
     }
-    ProfilerStop("buffering");
+    m_Profiler.Stop("buffering");
 }
 
 size_t BP4Serializer::CloseData(core::IO &io)
 {
-    ProfilerStart("buffering");
+    m_Profiler.Start("buffering");
     size_t dataEndsAt = m_Data.m_Position;
     if (!m_IsClosed)
     {
@@ -260,22 +260,22 @@ size_t BP4Serializer::CloseData(core::IO &io)
 
         SerializeMetadataInData(false, false);
 
-        if (m_Profiler.IsActive)
+        if (m_Profiler.m_IsActive)
         {
-            m_Profiler.Bytes.at("buffering") = m_Data.m_AbsolutePosition;
+            m_Profiler.m_Bytes.at("buffering") = m_Data.m_AbsolutePosition;
         }
 
         m_Aggregator.Close();
         m_IsClosed = true;
     }
 
-    ProfilerStop("buffering");
+    m_Profiler.Stop("buffering");
     return dataEndsAt;
 }
 
 size_t BP4Serializer::CloseStream(core::IO &io, const bool addMetadata)
 {
-    ProfilerStart("buffering");
+    m_Profiler.Start("buffering");
     if (m_MetadataSet.DataPGIsOpen)
     {
         SerializeDataBuffer(io);
@@ -283,11 +283,11 @@ size_t BP4Serializer::CloseStream(core::IO &io, const bool addMetadata)
     size_t dataEndsAt = m_Data.m_Position;
     SerializeMetadataInData(false, addMetadata);
 
-    if (m_Profiler.IsActive)
+    if (m_Profiler.m_IsActive)
     {
-        m_Profiler.Bytes.at("buffering") += m_Data.m_Position;
+        m_Profiler.m_Bytes.at("buffering") += m_Data.m_Position;
     }
-    ProfilerStop("buffering");
+    m_Profiler.Stop("buffering");
 
     return dataEndsAt;
 }
@@ -296,7 +296,7 @@ size_t BP4Serializer::CloseStream(core::IO &io, size_t &metadataStart,
                                   size_t &metadataCount, const bool addMetadata)
 {
 
-    ProfilerStart("buffering");
+    m_Profiler.Start("buffering");
     if (m_MetadataSet.DataPGIsOpen)
     {
         SerializeDataBuffer(io);
@@ -307,11 +307,11 @@ size_t BP4Serializer::CloseStream(core::IO &io, size_t &metadataStart,
 
     metadataCount = m_Data.m_Position - metadataStart;
 
-    if (m_Profiler.IsActive)
+    if (m_Profiler.m_IsActive)
     {
-        m_Profiler.Bytes.at("buffering") += m_Data.m_Position;
+        m_Profiler.m_Bytes.at("buffering") += m_Data.m_Position;
     }
-    ProfilerStop("buffering");
+    m_Profiler.Stop("buffering");
     return dataEndsAt;
 }
 
@@ -377,20 +377,20 @@ std::string BP4Serializer::GetRankProfilingJSON(
 
     auto &profiler = m_Profiler;
 
-    std::string timeDate(profiler.Timers.at("buffering").m_LocalTimeDate);
+    std::string timeDate(profiler.m_Timers.at("buffering").m_LocalTimeDate);
     timeDate.pop_back();
     // avoid whitespace
     std::replace(timeDate.begin(), timeDate.end(), ' ', '_');
 
     rankLog += "\"start\": \"" + timeDate + "\", ";
-    rankLog += "\"threads\": " + std::to_string(m_Threads) + ", ";
+    rankLog += "\"threads\": " + std::to_string(m_Parameters.Threads) + ", ";
     rankLog +=
-        "\"bytes\": " + std::to_string(profiler.Bytes.at("buffering")) + ", ";
-    lf_WriterTimer(rankLog, profiler.Timers.at("buffering"));
-    lf_WriterTimer(rankLog, profiler.Timers.at("memcpy"));
-    lf_WriterTimer(rankLog, profiler.Timers.at("minmax"));
-    lf_WriterTimer(rankLog, profiler.Timers.at("meta_sort_merge"));
-    lf_WriterTimer(rankLog, profiler.Timers.at("mkdir"));
+        "\"bytes\": " + std::to_string(profiler.m_Bytes.at("buffering")) + ", ";
+    lf_WriterTimer(rankLog, profiler.m_Timers.at("buffering"));
+    lf_WriterTimer(rankLog, profiler.m_Timers.at("memcpy"));
+    lf_WriterTimer(rankLog, profiler.m_Timers.at("minmax"));
+    lf_WriterTimer(rankLog, profiler.m_Timers.at("meta_sort_merge"));
+    lf_WriterTimer(rankLog, profiler.m_Timers.at("mkdir"));
 
     const size_t transportsSize = transportsTypes.size();
 
@@ -399,7 +399,7 @@ std::string BP4Serializer::GetRankProfilingJSON(
         rankLog += "\"transport_" + std::to_string(t) + "\": { ";
         rankLog += "\"type\": \"" + transportsTypes[t] + "\", ";
 
-        for (const auto &transportTimerPair : transportsProfilers[t]->Timers)
+        for (const auto &transportTimerPair : transportsProfilers[t]->m_Timers)
         {
             lf_WriterTimer(rankLog, transportTimerPair.second);
         }
@@ -432,8 +432,8 @@ void BP4Serializer::AggregateCollectiveMetadata(helper::Comm const &comm,
                                                 BufferSTL &bufferSTL,
                                                 const bool inMetadataBuffer)
 {
-    ProfilerStart("buffering");
-    ProfilerStart("meta_sort_merge");
+    m_Profiler.Start("buffering");
+    m_Profiler.Start("meta_sort_merge");
 
     AggregateCollectiveMetadataIndices(comm, bufferSTL);
 
@@ -489,8 +489,8 @@ void BP4Serializer::AggregateCollectiveMetadata(helper::Comm const &comm,
 
     bufferSTL.Resize(bufferSTL.m_Position, "after collective metadata is done");
 
-    ProfilerStop("meta_sort_merge");
-    ProfilerStop("buffering");
+    m_Profiler.Stop("meta_sort_merge");
+    m_Profiler.Stop("buffering");
 }
 
 void BP4Serializer::UpdateOffsetsInMetadata()
@@ -902,9 +902,9 @@ void BP4Serializer::SerializeMetadataInData(const bool updateAbsolutePosition,
         absolutePosition += footerSize;
     }
 
-    if (m_Profiler.IsActive)
+    if (m_Profiler.m_IsActive)
     {
-        m_Profiler.Bytes.emplace("buffering", absolutePosition);
+        m_Profiler.m_Bytes.emplace("buffering", absolutePosition);
     }
 }
 
@@ -1236,7 +1236,7 @@ BP4Serializer::DeserializeIndicesPerRankThreads(
     const std::vector<char> &serialized, helper::Comm const &comm,
     const bool isRankConstant) const noexcept
 {
-    if (m_Threads == 1)
+    if (m_Parameters.Threads == 1)
     {
         return BP4Serializer::DeserializeIndicesPerRankSingleThread(
             serialized, comm, isRankConstant);
@@ -1344,16 +1344,16 @@ BP4Serializer::DeserializeIndicesPerRankThreads(
 
     size_t serializedPosition = 0;
 
-    std::vector<std::future<void>> asyncs(m_Threads);
-    std::vector<size_t> asyncPositions(m_Threads);
-    std::vector<int> asyncRankSources(m_Threads);
+    std::vector<std::future<void>> asyncs(m_Parameters.Threads);
+    std::vector<size_t> asyncPositions(m_Parameters.Threads);
+    std::vector<int> asyncRankSources(m_Parameters.Threads);
 
     bool launched = false;
 
     while (serializedPosition < serializedSize)
     {
         // extract rank and index buffer size
-        for (unsigned int t = 0; t < m_Threads; ++t)
+        for (unsigned int t = 0; t < m_Parameters.Threads; ++t)
         {
             if (serializedPosition >= serializedSize)
             {
@@ -2148,7 +2148,7 @@ void BP4Serializer::AggregateCollectiveMetadataIndices(helper::Comm const &comm,
         std::vector<size_t> headerInfo(4);
         const bool isLittleEndian = helper::IsLittleEndian();
 
-        // if (m_Threads == 1)
+        // if (m_Parameters.Threads == 1)
         {
             while (serializedPosition < serializedSize)
             {
@@ -2479,7 +2479,7 @@ void BP4Serializer::MergeSerializeIndicesPerStep(
     };
 
     // BODY OF FUNCTION STARTS HERE
-    if (m_Threads == 1) // enforcing serial version for now
+    if (m_Parameters.Threads == 1) // enforcing serial version for now
     {
         for (const auto &rankIndices : nameRankIndices)
         {
@@ -2490,11 +2490,13 @@ void BP4Serializer::MergeSerializeIndicesPerStep(
 
     // TODO need to debug this part, if threaded per variable
     const size_t elements = nameRankIndices.size();
-    const size_t stride = elements / m_Threads;        // elements per thread
-    const size_t last = stride + elements % m_Threads; // remainder to last
+    const size_t stride =
+        elements / m_Parameters.Threads; // elements per thread
+    const size_t last =
+        stride + elements % m_Parameters.Threads; // remainder to last
 
     std::vector<std::thread> threads;
-    threads.reserve(m_Threads);
+    threads.reserve(m_Parameters.Threads);
 
     // copy names in order to use threads
     std::vector<std::string> names;
@@ -2505,12 +2507,12 @@ void BP4Serializer::MergeSerializeIndicesPerStep(
         names.push_back(nameRankIndexPair.first);
     }
 
-    for (unsigned int t = 0; t < m_Threads; ++t)
+    for (unsigned int t = 0; t < m_Parameters.Threads; ++t)
     {
         const size_t start = stride * t;
         size_t end = start + stride;
 
-        if (t == m_Threads - 1)
+        if (t == m_Parameters.Threads - 1)
         {
             end = start + last;
         }
@@ -2838,7 +2840,7 @@ void BP4Serializer::MergeSerializeIndices(
     };
 
     // BODY OF FUNCTION STARTS HERE
-    if (m_Threads == 1) // enforcing serial version for now
+    if (m_Parameters.Threads == 1) // enforcing serial version for now
     {
         for (const auto &rankIndices : nameRankIndices)
         {
@@ -2849,11 +2851,13 @@ void BP4Serializer::MergeSerializeIndices(
 
     // TODO need to debug this part, if threaded per variable
     const size_t elements = nameRankIndices.size();
-    const size_t stride = elements / m_Threads;        // elements per thread
-    const size_t last = stride + elements % m_Threads; // remainder to last
+    const size_t stride =
+        elements / m_Parameters.Threads; // elements per thread
+    const size_t last =
+        stride + elements % m_Parameters.Threads; // remainder to last
 
     std::vector<std::thread> threads;
-    threads.reserve(m_Threads);
+    threads.reserve(m_Parameters.Threads);
 
     // copy names in order to use threads
     std::vector<std::string> names;
@@ -2864,12 +2868,12 @@ void BP4Serializer::MergeSerializeIndices(
         names.push_back(nameRankIndexPair.first);
     }
 
-    for (unsigned int t = 0; t < m_Threads; ++t)
+    for (unsigned int t = 0; t < m_Parameters.Threads; ++t)
     {
         const size_t start = stride * t;
         size_t end = start + stride;
 
-        if (t == m_Threads - 1)
+        if (t == m_Parameters.Threads - 1)
         {
             end = start + last;
         }

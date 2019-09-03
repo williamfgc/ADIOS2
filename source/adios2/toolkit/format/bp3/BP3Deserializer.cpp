@@ -29,7 +29,7 @@ namespace format
 std::mutex BP3Deserializer::m_Mutex;
 
 BP3Deserializer::BP3Deserializer(helper::Comm const &comm, const bool debugMode)
-: BP3Base(comm, debugMode)
+: BP3Base(comm, debugMode), m_Minifooter(3)
 {
 }
 
@@ -204,7 +204,7 @@ void BP3Deserializer::ParseVariablesIndex(const BufferSTL &bufferSTL,
     const size_t startPosition = position;
     size_t localPosition = 0;
 
-    if (m_Threads == 1)
+    if (m_Parameters.Threads == 1)
     {
         while (localPosition < length)
         {
@@ -220,15 +220,15 @@ void BP3Deserializer::ParseVariablesIndex(const BufferSTL &bufferSTL,
     }
 
     // threads for reading Variables
-    std::vector<std::future<void>> asyncs(m_Threads);
-    std::vector<size_t> asyncPositions(m_Threads);
+    std::vector<std::future<void>> asyncs(m_Parameters.Threads);
+    std::vector<size_t> asyncPositions(m_Parameters.Threads);
 
     bool launched = false;
 
     while (localPosition < length)
     {
         // extract async positions
-        for (unsigned int t = 0; t < m_Threads; ++t)
+        for (unsigned int t = 0; t < m_Parameters.Threads; ++t)
         {
             asyncPositions[t] = position;
             const size_t elementIndexSize =

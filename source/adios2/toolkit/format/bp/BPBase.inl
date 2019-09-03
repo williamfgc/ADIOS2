@@ -2,19 +2,21 @@
  * Distributed under the OSI-approved Apache License, Version 2.0.  See
  * accompanying file Copyright.txt for details.
  *
- * BP3Base.inl
+ * BPBase.inl
  *
- *  Created on: Feb 13, 2019
- *      Author: Kai Germaschewski <kai.germaschewski@unh.edu>
+ *  Created on: Sep 3, 2019
+ *      Author: Kai Germaschewski kai.germaschewski@unh.edu
+ *              William F Godoy godoywf@ornl.gov
+ *
  */
 
-#ifndef ADIOS2_TOOLKIT_FORMAT_BP3_BP3BASE_INL_
-#define ADIOS2_TOOLKIT_FORMAT_BP3_BP3BASE_INL_
-#ifndef ADIOS2_TOOLKIT_FORMAT_BP3_BP3BASE_H_
+#ifndef ADIOS2_TOOLKIT_FORMAT_BP_BPBASE_INL_
+#define ADIOS2_TOOLKIT_FORMAT_BP_BPBASE_INL_
+#ifndef ADIOS2_TOOLKIT_FORMAT_BP_BPBASE_H_
 #error "Inline file should only be included from its header, never on its own"
 #endif
 
-#include "BP3Base.h"
+#include "BPBase.h"
 
 namespace adios2
 {
@@ -25,7 +27,7 @@ namespace format
 
 #define make_TypeTraits(data_type, TYPE)                                       \
     template <>                                                                \
-    struct BP3Base::TypeTraits<TYPE>                                           \
+    struct BPBase::TypeTraits<TYPE>                                            \
     {                                                                          \
         static const DataTypes type_enum = DataTypes::data_type;               \
     };
@@ -51,4 +53,4 @@ make_TypeTraits(type_double_complex, cdouble)
 } // end namespace format
 } // end namespace adios2
 
-#endif /* ADIOS2_TOOLKIT_FORMAT_BP3_BP3BASE_INL_ */
+#endif /* ADIOS2_TOOLKIT_FORMAT_BP_BPBASE_INL_ */
