@@ -9,17 +9,35 @@
  */
 
 #include "BufferSTL.h"
+#include "BufferSTL.tcc"
 
 namespace adios2
 {
 namespace format
 {
 
-BufferSTL::BufferSTL() : Buffer("BufferSTL") {}
+BufferSTL::BufferSTL(const bool debugMode) : Buffer("BufferSTL", debugMode) {}
 
 char *BufferSTL::Data() noexcept { return m_Buffer.data(); }
 
 const char *BufferSTL::Data() const noexcept { return m_Buffer.data(); }
+
+void BufferSTL::Resize(const size_t size, const std::string hint)
+{
+    try
+    {
+        // doing this will effectively replace the STL GNU default power of 2
+        // reallocation.
+        m_Buffer.reserve(size);
+    }
+    catch (...)
+    {
+        // catch a bad_alloc
+        std::throw_with_nested(std::runtime_error(
+            "ERROR: buffer overflow when reserving to " + std::to_string(size) +
+            " bytes, " + hint + "\n"));
+    }
+}
 
 void BufferSTL::Resize(const size_t size, const std::string hint)
 {
@@ -54,10 +72,22 @@ void BufferSTL::Reset(const bool resetAbsolutePosition,
     }
 }
 
-size_t BufferSTL::GetAvailableSize() const
-{
-    return m_Buffer.size() - m_Position;
-}
+size_t BufferSTL::AvailableSize() const { return m_Buffer.size() - m_Position; }
+
+#define declare_map(T)                                                         \
+    void BufferSTL::DoInsert(const size_t position, const T *source,           \
+                             const size_t elements)                            \
+    {                                                                          \
+        InsertCommon(position, source, elements);                              \
+    }                                                                          \
+                                                                               \
+    void BufferSTL::DoInsert(const T *source, const size_t elements)           \
+    {                                                                          \
+        InsertCommon(source, elements);                                        \
+    }
+
+ADIOS2_FOREACH_PRIMITIVE_STDTYPE_1ARG(declare_map)
+#undef declare_map
 
 } // end namespace format
 } // end namespace adios2

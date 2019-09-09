@@ -41,7 +41,6 @@ void BP3Serializer::PutProcessGroupIndex(
 {
     m_Profiler.Start("buffering");
     std::vector<char> &metadataBuffer = m_MetadataSet.PGIndex.Buffer;
-
     std::vector<char> &dataBuffer = m_Data.m_Buffer;
     size_t &dataPosition = m_Data.m_Position;
 

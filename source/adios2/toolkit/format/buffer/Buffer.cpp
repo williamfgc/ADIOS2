@@ -15,9 +15,16 @@ namespace adios2
 namespace format
 {
 
-Buffer::Buffer(const std::string type, const size_t fixedSize)
-: m_Type(type), m_FixedSize(fixedSize)
+Buffer::Buffer(const std::string type, const bool debugMode,
+               const size_t fixedSize)
+: m_Type(type), m_DebugMode(debugMode), m_FixedSize(fixedSize)
 {
+}
+
+void Buffer::Reserve(const size_t size, const std::string hint)
+{
+    throw std::invalid_argument("ERROR: buffer memory of type " + m_Type +
+                                " can't call Reserve " + hint + "\n");
 }
 
 void Buffer::Resize(const size_t size, const std::string hint)
@@ -36,14 +43,34 @@ char *Buffer::Data() noexcept { return nullptr; }
 
 const char *Buffer::Data() const noexcept { return nullptr; }
 
-size_t Buffer::GetAvailableSize() const
+size_t Buffer::AvailableSize() const
 {
-    if (m_FixedSize > 0 && m_FixedSize >= m_Position)
+    const size_t position = Position();
+    const size_t fixedSize = FixedSize();
+
+    if (fixedSize > 0 && fixedSize >= position)
     {
-        return m_FixedSize - m_Position;
+        return fixedSize - position;
     }
     return 0;
 }
+
+#define declare_map(T)                                                         \
+    template <>                                                                \
+    void Buffer::Insert(const T *source, const size_t elements)                \
+    {                                                                          \
+        DoInsert(source, elements);                                            \
+    }                                                                          \
+                                                                               \
+    template <>                                                                \
+    void Buffer::Insert(const size_t position, const T *source,                \
+                        const size_t elements)                                 \
+    {                                                                          \
+        DoInsert(position, source, elements);                                  \
+    }
+
+ADIOS2_FOREACH_PRIMITIVE_STDTYPE_1ARG(declare_map)
+#undef declare_map
 
 } // end namespace format
 } // end namespace adios2
