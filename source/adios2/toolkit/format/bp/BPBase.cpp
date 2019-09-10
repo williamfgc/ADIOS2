@@ -27,10 +27,16 @@ namespace format
 
 // PUBLIC
 BPBase::SerialElementIndex::SerialElementIndex(const uint32_t memberID,
-                                               const size_t bufferSize)
+                                               const size_t bufferSize,
+                                               const std::string type)
 : MemberID(memberID)
 {
-    Buffer.reserve(bufferSize);
+    if (type == "BufferSTL")
+    {
+        Index = new BufferSTL(false);
+        Index->Reserve(bufferSize,
+                       "in call to BPBase::SerialElementIndex constructor");
+    }
 }
 
 BPBase::Minifooter::Minifooter(const int8_t version) : Version(version) {}
@@ -91,6 +97,10 @@ void BPBase::Init(const Params &parameters, const std::string hint)
             m_Parameters.GrowthFactor = helper::StringTo<float>(
                 value, m_DebugMode,
                 " in Parameter key=BufferGrowthFactor " + hint);
+        }
+        else if (key == "buffertype")
+        {
+            m_Parameters.BufferType = value;
         }
         else if (key == "initialbuffersize")
         {
@@ -201,19 +211,32 @@ void BPBase::Init(const Params &parameters, const std::string hint)
 
     // set initial buffer size
     m_Profiler.Start("buffering");
-    m_Data.Resize(m_Parameters.InitialBufferSize, hint);
+    if (m_Parameters.BufferType == "bufferstl")
+    {
+        m_Data = new BufferSTL(false);
+        m_Data->Reserve(m_Parameters.InitialBufferSize, hint);
+    }
+    else
+    {
+        if (m_DebugMode)
+        {
+            throw std::invalid_argument("ERROR: buffer type " +
+                                        m_Parameters.BufferType +
+                                        " is not supported " + hint);
+        }
+    }
     m_Profiler.Stop("buffering");
 }
 
-BPBase::ResizeResult BPBase::ResizeBuffer(const size_t dataIn,
-                                          const std::string hint)
+BPBase::ReserveResult BPBase::ReserveBuffer(const size_t dataIn,
+                                            const std::string hint)
 {
     m_Profiler.Start("buffering");
-    const size_t currentSize = m_Data.m_Buffer.size();
-    const size_t requiredSize = dataIn + m_Data.m_Position;
+    const size_t currentSize = m_Data->Position();
+    const size_t requiredSize = dataIn + currentSize;
     const size_t maxBufferSize = m_Parameters.MaxBufferSize;
 
-    ResizeResult result = ResizeResult::Unchanged;
+    ReserveResult result = ReserveResult::Unchanged;
 
     if (dataIn > maxBufferSize)
     {
@@ -235,11 +258,11 @@ BPBase::ResizeResult BPBase::ResizeBuffer(const size_t dataIn,
     {
         if (currentSize < maxBufferSize)
         {
-            m_Data.Resize(maxBufferSize, " when resizing buffer to " +
-                                             std::to_string(maxBufferSize) +
-                                             "bytes, " + hint + "\n");
+            m_Data->Reserve(maxBufferSize, " when reserving buffer to " +
+                                               std::to_string(maxBufferSize) +
+                                               "bytes, " + hint + "\n");
         }
-        result = ResizeResult::Flush;
+        result = ReserveResult::Flush;
     }
     else // buffer must grow
     {
@@ -249,10 +272,10 @@ BPBase::ResizeResult BPBase::ResizeBuffer(const size_t dataIn,
             const size_t nextSize = std::min(
                 maxBufferSize, helper::NextExponentialSize(
                                    requiredSize, currentSize, growthFactor));
-            m_Data.Resize(nextSize, " when resizing buffer to " +
-                                        std::to_string(nextSize) + "bytes, " +
-                                        hint);
-            result = ResizeResult::Success;
+            m_Data->Reserve(nextSize, " when resizing buffer to " +
+                                          std::to_string(nextSize) + "bytes, " +
+                                          hint);
+            result = ReserveResult::Success;
         }
     }
 
@@ -260,11 +283,10 @@ BPBase::ResizeResult BPBase::ResizeBuffer(const size_t dataIn,
     return result;
 }
 
-void BPBase::ResetBuffer(Buffer &buffer, const bool resetAbsolutePosition,
-                         const bool zeroInitialize)
+void BPBase::ResetBuffer(Buffer &buffer, const bool resetAbsolutePosition)
 {
     m_Profiler.Start("buffering");
-    buffer.Reset(resetAbsolutePosition, zeroInitialize);
+    buffer.Reset(resetAbsolutePosition);
     m_Profiler.Stop("buffering");
 }
 

@@ -24,8 +24,9 @@ namespace format
 {
 
 BufferSystemV::BufferSystemV(const size_t fixedSize, const std::string &name,
-                             const unsigned int projectID, const bool remove)
-: Buffer("BufferSystemV", fixedSize), m_Remove(remove)
+                             const unsigned int projectID, const bool remove,
+                             const bool debugMode)
+: Buffer("BufferSystemV", debugMode, fixedSize), m_Remove(remove)
 {
     assert(projectID > 0); // for the developer
     key_t key = ftok(name.c_str(), static_cast<int>(projectID));
@@ -58,23 +59,43 @@ BufferSystemV::~BufferSystemV()
     }
 }
 
+size_t BufferSystemV::Capacity() const noexcept { return m_FixedSize; }
+
+size_t BufferSystemV::Position() const noexcept { return m_Position; }
+
 char *BufferSystemV::Data() noexcept { return m_Data; }
 
 const char *BufferSystemV::Data() const noexcept { return m_Data; }
 
-void BufferSystemV::Reset(const bool resetAbsolutePosition,
-                          const bool zeroInitialize)
+void BufferSystemV::Reset(const bool resetAbsolutePosition)
 {
     m_Position = 0;
     if (resetAbsolutePosition)
     {
         m_AbsolutePosition = 0;
     }
-    if (zeroInitialize)
-    {
-        memset(m_Data, 0, m_FixedSize);
-    }
 }
+
+size_t BufferSystemV::AvailableSize() const noexcept
+{
+    return m_FixedSize - m_Position;
+}
+
+#define declare_map(T)                                                         \
+    void BufferSystemV::DoInsert(size_t &position, const T *source,            \
+                                 const size_t elements, const bool safe)       \
+    {                                                                          \
+        InsertCommon(position, source, elements, safe);                        \
+    }                                                                          \
+                                                                               \
+    void BufferSystemV::DoInsert(const T *source, const size_t elements,       \
+                                 const bool safe)                              \
+    {                                                                          \
+        InsertCommon(source, elements, safe);                                  \
+    }
+
+ADIOS2_FOREACH_PRIMITIVE_STDTYPE_1ARG(declare_map)
+#undef declare_map
 
 } // end namespace format
 } // end namespace adios2

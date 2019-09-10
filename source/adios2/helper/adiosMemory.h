@@ -37,7 +37,11 @@ void CopyEndianReverse(const char *src, const size_t payloadStride, T *dest);
  */
 template <class T>
 void InsertToBuffer(std::vector<char> &buffer, const T *source,
-                    const size_t elements = 1) noexcept;
+                    const size_t elements = 1);
+
+template <class T>
+void InsertToBuffer(std::vector<char> &buffer, size_t &position,
+                    const T *source, const size_t elements = 1);
 
 /**
  * Copies data to a specific location in the buffer updating position

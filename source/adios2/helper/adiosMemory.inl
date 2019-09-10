@@ -68,10 +68,19 @@ inline void CopyEndianReverse<std::complex<double>>(const char *src,
 
 template <class T>
 void InsertToBuffer(std::vector<char> &buffer, const T *source,
-                    const size_t elements) noexcept
+                    const size_t elements)
 {
     const char *src = reinterpret_cast<const char *>(source);
     buffer.insert(buffer.end(), src, src + elements * sizeof(T));
+}
+
+template <class T>
+void InsertToBuffer(std::vector<char> &buffer, size_t &position,
+                    const T *source, const size_t elements)
+{
+    const char *src = reinterpret_cast<const char *>(source);
+    buffer.insert(buffer.begin() + position, src, src + elements * sizeof(T));
+    position += elements * sizeof(T);
 }
 
 template <class T>

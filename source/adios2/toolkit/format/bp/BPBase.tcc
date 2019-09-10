@@ -533,7 +533,7 @@ inline void BPBase::ParseCharacteristics(const std::vector<char> &buffer,
                                         " not supported\n");
         }
 
-        } // end switch
+        } // end switchbuffer
 
         if (untilTimeStep && foundTimeStep)
         {

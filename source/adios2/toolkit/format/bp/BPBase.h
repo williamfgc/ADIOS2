@@ -42,7 +42,7 @@ public:
     struct SerialElementIndex
     {
         /** buffer containing the metadata index, start with 500bytes */
-        std::vector<char> Buffer;
+        std::unique_ptr<Buffer> Index;
 
         /** number of characteristics sets (time and spatial aggregation) */
         uint64_t Count = 0;
@@ -79,7 +79,8 @@ public:
          * @param bufferSize initial buffer size
          */
         SerialElementIndex(const uint32_t memberID,
-                           const size_t bufferSize = 200);
+                           const size_t bufferSize = 200,
+                           const std::string type = "BufferSTL");
     };
 
     struct MetadataSet
@@ -153,6 +154,9 @@ public:
     /** groups all user-level parameters in a single struct */
     struct Parameters
     {
+        /** Buffer type for data and metadata */
+        std::string BufferType = "bufferstl";
+
         /** Parameter to flush transports at every number of steps, to be used
          * at EndStep */
         size_t FlushStepsCount = 1;
@@ -204,10 +208,10 @@ public:
     };
 
     /** Return type of the ResizeBuffer function. */
-    enum class ResizeResult
+    enum class ReserveResult
     {
         Failure,   //!< FAILURE, caught a std::bad_alloc
-        Unchanged, //!< UNCHANGED, no need to resize (sufficient capacity)
+        Unchanged, //!< UNCHANGED, no need to reserve (sufficient capacity)
         Success,   //!< SUCCESS, resize was successful
         Flush      //!< FLUSH, need to flush to transports for current variable
     };
@@ -217,19 +221,11 @@ public:
     int m_SizeMPI = 1;          ///< current MPI processes size
     int m_Processes = 1;        ///< number of aggregated MPI processes
 
-    /** sub-block size for min/max calculation of large arrays
-     * in number of elements (not bytes)
-     * The default big number per Put() default will result in the original
-     * single min/max value-pair per block
-     * BP4Only
-     */
-    // size_t m_StatsBlockSize = 1125899906842624;
-
     /** contains data buffer for this rank */
-    BufferSTL m_Data;
+    std::unique_ptr<Buffer> m_Data;
 
     /** contains collective metadata buffer, only used by rank 0 */
-    BufferSTL m_Metadata;
+    std::unique_ptr<Buffer> m_Metadata;
 
     /** contains metadata indices */
     MetadataSet m_MetadataSet;
@@ -291,23 +287,21 @@ public:
     /****************** NEED to check if some are virtual */
 
     /**
-     * Resizes the data buffer to hold new dataIn size
+     * Reserves the data buffer to hold new dataIn size
      * @param dataIn input size for new data
      * @param hint extra messaging for exception handling
      * @return Failure, Unchanged, Success, Flush
      */
-    ResizeResult ResizeBuffer(const size_t dataIn, const std::string hint);
+    ReserveResult ReserveBuffer(const size_t dataIn, const std::string hint);
 
     /**
-     * Sets buffer's positions to zero and fill buffer with zero char
-     * @param bufferSTL buffer to be reset
-     * @param resetAbsolutePosition true: both bufferSTL.m_Position and
-     * bufferSTL.m_AbsolutePosition set to 0,   false(default): only
-     * bufferSTL.m_Position
-     * is set to zero,
+     * Sets buffer's positions to zero
+     * @param buffer to be reset
+     * @param resetAbsolutePosition true: both, buffer Position() and
+     * AbsolutePosition() are set to 0,   false(default): only buffer
+     * Position() is set to zero,
      */
-    void ResetBuffer(Buffer &buffer, const bool resetAbsolutePosition = false,
-                     const bool zeroInitialize = true);
+    void ResetBuffer(Buffer &buffer, const bool resetAbsolutePosition = false);
 
 protected:
     const bool m_DebugMode = false;
