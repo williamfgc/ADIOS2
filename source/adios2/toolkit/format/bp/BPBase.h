@@ -35,14 +35,16 @@ class BPBase
 {
 public:
     /**
-     * Metadata index used for Variables and Attributes, needed in a
-     * container for characteristic sets merge independently for each Variable
-     * or Attribute
+     * Metadata index used for PGIndices, Variables and Attributes, needed in a
+     * container for characteristic sets merge independently
      */
     struct SerialElementIndex
     {
-        /** buffer containing the metadata index, start with 500bytes */
-        std::unique_ptr<Buffer> Index;
+        /**
+         * heap buffer containing the metadata index for each variable, start
+         * with a 200 bytes allocation
+         * */
+        BufferSTL Buffer;
 
         /** number of characteristics sets (time and spatial aggregation) */
         uint64_t Count = 0;
@@ -216,10 +218,11 @@ public:
         Flush      //!< FLUSH, need to flush to transports for current variable
     };
 
-    helper::Comm const &m_Comm; ///< multi-process communicator from Engine
-    int m_RankMPI = 0;          ///< current MPI rank process
-    int m_SizeMPI = 1;          ///< current MPI processes size
-    int m_Processes = 1;        ///< number of aggregated MPI processes
+    helper::Comm const &m_Comm;     ///< multi-process communicator from Engine
+    int m_RankMPI = 0;              ///< current MPI rank process
+    int m_SizeMPI = 1;              ///< current MPI processes size
+    int m_Processes = 1;            ///< number of aggregated MPI processes
+    size_t m_PreDataFileLength = 0; ///< TODO figure out what this is
 
     /** contains data buffer for this rank */
     std::unique_ptr<Buffer> m_Data;
@@ -562,9 +565,10 @@ protected:
      * @param isLittleEndian true: buffer is little endian, false: big endian
      * @return populated PGIndex struct
      */
-    ProcessGroupIndex ReadProcessGroupIndexHeader(
-        const std::vector<char> &buffer, size_t &position,
-        const bool isLittleEndian = true) const noexcept;
+    ProcessGroupIndex
+    ReadProcessGroupIndexHeader(const Buffer &buffer, size_t &position,
+                                const bool isLittleEndian = true) const
+        noexcept;
 
     /**
      * Reads a PG index from a buffer position and advances the position until
@@ -591,8 +595,8 @@ protected:
      */
     template <class T>
     Characteristics<T>
-    ReadElementIndexCharacteristics(const std::vector<char> &buffer,
-                                    size_t &position, const DataTypes dataType,
+    ReadElementIndexCharacteristics(const Buffer &buffer, size_t &position,
+                                    const DataTypes dataType,
                                     const bool untilTimeStep = false,
                                     const bool isLittleEndian = true) const;
 
@@ -603,8 +607,27 @@ protected:
      * @param position input start position, output as end element
      * @return populated string
      */
-    std::string ReadBPString(const std::vector<char> &buffer, size_t &position,
+    std::string ReadBPString(const Buffer &buffer, size_t &position,
                              const bool isLittleEndian = true) const noexcept;
+
+    /**
+     * Common function to insert a BP standard string, 2 bytes for length +
+     * contents from a buffer position advancing the position until done
+     * @param input string to be inserted
+     * @param buffer
+     * @param position input start position, output as end of the string
+     * position (2 + string.size() )
+     */
+    void InsertBPString(const std::string &input, Buffer &buffer,
+                        size_t &position);
+
+    /**
+     * Common function to insert a BP standard string, 2 bytes for length +
+     * contents from current Buffer Position
+     * @param input string to be inserted
+     * @param buffer
+     */
+    void InsertBPString(const std::string &input, Buffer &buffer);
 
 private:
     /**
@@ -612,7 +635,7 @@ private:
      * struct for a variable block
      */
     template <class T>
-    void ParseCharacteristics(const std::vector<char> &buffer, size_t &position,
+    void ParseCharacteristics(const Buffer &buffer, size_t &position,
                               const DataTypes dataType,
                               const bool untilTimeStep,
                               Characteristics<T> &characteristics,
@@ -621,8 +644,8 @@ private:
 
 #define declare_template_instantiation(T)                                      \
     extern template BPBase::Characteristics<T>                                 \
-    BPBase::ReadElementIndexCharacteristics(const std::vector<char> &,         \
-                                            size_t &, const BPBase::DataTypes, \
+    BPBase::ReadElementIndexCharacteristics(const Buffer &, size_t &,          \
+                                            const BPBase::DataTypes,           \
                                             const bool, const bool) const;
 
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)

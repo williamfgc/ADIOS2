@@ -29,12 +29,11 @@ namespace format
 BPBase::SerialElementIndex::SerialElementIndex(const uint32_t memberID,
                                                const size_t bufferSize,
                                                const std::string type)
-: MemberID(memberID)
+: MemberID(memberID), Buffer(BufferSTL(false))
 {
     if (type == "BufferSTL")
     {
-        Index = new BufferSTL(false);
-        Index->Reserve(bufferSize,
+        Buffer.Reserve(bufferSize,
                        "in call to BPBase::SerialElementIndex constructor");
     }
 }
@@ -344,40 +343,49 @@ size_t BPBase::GetProcessGroupIndexSize(const std::string name,
 }
 
 BPBase::ProcessGroupIndex
-BPBase::ReadProcessGroupIndexHeader(const std::vector<char> &buffer,
-                                    size_t &position,
+BPBase::ReadProcessGroupIndexHeader(const Buffer &buffer, size_t &position,
                                     const bool isLittleEndian) const noexcept
 {
     ProcessGroupIndex index;
-    index.Length =
-        helper::ReadValue<uint16_t>(buffer, position, isLittleEndian);
+    index.Length = buffer.Read<uint16_t>(position, isLittleEndian);
     index.Name = ReadBPString(buffer, position, isLittleEndian);
-    index.IsColumnMajor =
-        helper::ReadValue<char>(buffer, position, isLittleEndian);
-    index.ProcessID =
-        helper::ReadValue<int32_t>(buffer, position, isLittleEndian);
+    index.IsColumnMajor = buffer.Read<char>(position, isLittleEndian);
+    index.ProcessID = buffer.Read<int32_t>(position, isLittleEndian);
     index.StepName = ReadBPString(buffer, position, isLittleEndian);
-    index.Step = helper::ReadValue<uint32_t>(buffer, position, isLittleEndian);
-    index.Offset =
-        helper::ReadValue<uint64_t>(buffer, position, isLittleEndian);
+    index.Step = buffer.Read<uint32_t>(position, isLittleEndian);
+    index.Offset = buffer.Read<uint64_t>(position, isLittleEndian);
     return index;
 }
 
-std::string BPBase::ReadBPString(const std::vector<char> &buffer,
-                                 size_t &position,
+std::string BPBase::ReadBPString(const Buffer &buffer, size_t &position,
                                  const bool isLittleEndian) const noexcept
 {
-    const size_t size = static_cast<size_t>(
-        helper::ReadValue<uint16_t>(buffer, position, isLittleEndian));
+    const size_t size =
+        static_cast<size_t>(buffer.Read<uint16_t>(position, isLittleEndian));
 
     if (size == 0)
     {
         return "";
     }
 
-    const std::string values(&buffer[position], size);
+    const std::string values(&buffer.Data()[position], size);
     position += size;
     return values;
+}
+
+void BPBase::InsertBPString(const std::string &input, Buffer &buffer,
+                            size_t &position)
+{
+    const size_t size = input.size();
+    buffer.Insert(position, static_cast<uint16_t>(size));
+    buffer.Insert(position, input.c_str(), size);
+}
+
+void BPBase::InsertBPString(const std::string &input, Buffer &buffer)
+{
+    const size_t size = input.size();
+    buffer.Insert(static_cast<uint16_t>(size));
+    buffer.Insert(input.c_str(), size);
 }
 
 // static members
@@ -460,8 +468,8 @@ std::map<size_t, std::shared_ptr<BPOperation>> BPBase::SetBPOperations(
 
 #define declare_template_instantiation(T)                                      \
     template BPBase::Characteristics<T>                                        \
-    BPBase::ReadElementIndexCharacteristics(const std::vector<char> &,         \
-                                            size_t &, const BPBase::DataTypes, \
+    BPBase::ReadElementIndexCharacteristics(const Buffer &, size_t &,          \
+                                            const BPBase::DataTypes,           \
                                             const bool, const bool) const;
 
 ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)

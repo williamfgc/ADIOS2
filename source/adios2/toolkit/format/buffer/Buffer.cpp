@@ -22,8 +22,6 @@ Buffer::Buffer(const std::string type, const bool debugMode,
 {
 }
 
-size_t Buffer::FixedSize() const noexcept { return m_FixedSize; }
-
 size_t Buffer::AbsolutePosition() const noexcept { return m_AbsolutePosition; }
 
 char *Buffer::Data() noexcept { return nullptr; }
@@ -40,10 +38,32 @@ const char *Buffer::Data() const noexcept { return nullptr; }
     }                                                                          \
                                                                                \
     template <>                                                                \
+    void Buffer::Insert(const T &source, const size_t elements,                \
+                        const bool safe)                                       \
+    {                                                                          \
+        const T localSource = source;                                          \
+        for (size_t e = 0; e < elements; ++e)                                  \
+        {                                                                      \
+            Insert(&localSource, 1, safe);                                     \
+        }                                                                      \
+    }                                                                          \
+                                                                               \
+    template <>                                                                \
     void Buffer::Insert(size_t &position, const T *source,                     \
                         const size_t elements, const bool safe)                \
     {                                                                          \
         DoInsert(position, source, elements, safe);                            \
+    }                                                                          \
+                                                                               \
+    template <>                                                                \
+    void Buffer::Insert(size_t &position, const T &source,                     \
+                        const size_t elements, const bool safe)                \
+    {                                                                          \
+        const T localSource = source;                                          \
+        for (size_t e = 0; e < elements; ++e)                                  \
+        {                                                                      \
+            Insert(position, &localSource, 1, safe);                           \
+        }                                                                      \
     }
 
 ADIOS2_FOREACH_PRIMITIVE_STDTYPE_1ARG(declare_map)

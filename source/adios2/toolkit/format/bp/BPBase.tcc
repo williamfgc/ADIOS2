@@ -24,14 +24,13 @@ namespace format
 
 template <class T>
 BPBase::Characteristics<T> BPBase::ReadElementIndexCharacteristics(
-    const std::vector<char> &buffer, size_t &position, const DataTypes dataType,
+    const Buffer &buffer, size_t &position, const DataTypes dataType,
     const bool untilTimeStep, const bool isLittleEndian) const
 {
     Characteristics<T> characteristics;
-    characteristics.EntryCount =
-        helper::ReadValue<uint8_t>(buffer, position, isLittleEndian);
+    characteristics.EntryCount = buffer.Read<uint8_t>(position, isLittleEndian);
     characteristics.EntryLength =
-        helper::ReadValue<uint32_t>(buffer, position, isLittleEndian);
+        buffer.Read<uint32_t>(position, isLittleEndian);
 
     ParseCharacteristics(buffer, position, dataType, untilTimeStep,
                          characteristics, isLittleEndian);
@@ -42,7 +41,7 @@ BPBase::Characteristics<T> BPBase::ReadElementIndexCharacteristics(
 // String specialization
 template <>
 inline void
-BPBase::ParseCharacteristics(const std::vector<char> &buffer, size_t &position,
+BPBase::ParseCharacteristics(const Buffer &buffer, size_t &position,
                              const DataTypes dataType, const bool untilTimeStep,
                              Characteristics<std::string> &characteristics,
                              const bool isLittleEndian) const
@@ -54,15 +53,14 @@ BPBase::ParseCharacteristics(const std::vector<char> &buffer, size_t &position,
 
     while (localPosition < characteristics.EntryLength)
     {
-        const uint8_t id =
-            helper::ReadValue<uint8_t>(buffer, position, isLittleEndian);
+        const uint8_t id = buffer.Read<uint8_t>(position, isLittleEndian);
 
         switch (id)
         {
         case (characteristic_time_index):
         {
             characteristics.Statistics.Step =
-                helper::ReadValue<uint32_t>(buffer, position, isLittleEndian);
+                buffer.Read<uint32_t>(position, isLittleEndian);
             foundTimeStep = true;
             break;
         }
@@ -70,7 +68,7 @@ BPBase::ParseCharacteristics(const std::vector<char> &buffer, size_t &position,
         case (characteristic_file_index):
         {
             characteristics.Statistics.FileIndex =
-                helper::ReadValue<uint32_t>(buffer, position, isLittleEndian);
+                buffer.Read<uint32_t>(position, isLittleEndian);
             break;
         }
 

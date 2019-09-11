@@ -73,6 +73,20 @@ public:
                 const bool safe = false);
 
     /**
+     * Insert a repeated value at current position from Position(), updates the
+     * position after insertion is done. This signature updates the
+     * AbsolutePosition()
+     * @param source address input
+     * @param elements (optional) number of elements of type T to be inserted
+     * from source, default = 1
+     * @param safe (optional) if true would check memory and reallocate if
+     * possible, potentially slow.
+     */
+    template <class T>
+    void Insert(const T &source, const size_t elements = 1,
+                const bool safe = false);
+
+    /**
      * Insert values at any position, updates the position after insertion is
      * done.
      * @param source address input
@@ -83,6 +97,19 @@ public:
      */
     template <class T>
     void Insert(size_t &position, const T *source, const size_t elements = 1,
+                const bool safe = false);
+
+    /**
+     * Insert repeated values at any position, updates the position after
+     * insertion is done.
+     * @param source address input
+     * @param elements (optional) number of elements of type T to be inserted
+     * from source, default = 1
+     * @param safe (optional) if true would check memory and reallocate if
+     * possible, potentially slow.
+     */
+    template <class T>
+    void Insert(size_t &position, const T &source, const size_t elements = 1,
                 const bool safe = false);
 
     /**
@@ -178,7 +205,12 @@ protected:
 #define declare_map(T)                                                         \
     extern template void Buffer::Insert(const T *, const size_t, const bool);  \
                                                                                \
+    extern template void Buffer::Insert(const T &, const size_t, const bool);  \
+                                                                               \
     extern template void Buffer::Insert(size_t &, const T *, const size_t,     \
+                                        const bool);                           \
+                                                                               \
+    extern template void Buffer::Insert(size_t &, const T &, const size_t,     \
                                         const bool);                           \
                                                                                \
     extern template T Buffer::Read(size_t &, const bool, const bool) const;    \
