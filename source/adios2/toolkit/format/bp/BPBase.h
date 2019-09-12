@@ -306,6 +306,17 @@ public:
      */
     void ResetBuffer(Buffer &buffer, const bool resetAbsolutePosition = false);
 
+    std::vector<std::string>
+    MetadataNames(const std::vector<std::string> &names) const noexcept;
+
+    std::vector<std::string> DataNames(const std::vector<std::string> &names,
+                                       const size_t id,
+                                       const bool hasSubStreams = false) const
+        noexcept;
+
+    std::vector<std::string>
+    BaseNames(const std::vector<std::string> &names) const noexcept;
+
 protected:
     const bool m_DebugMode = false;
 
@@ -628,6 +639,15 @@ protected:
      * @param buffer
      */
     void InsertBPString(const std::string &input, Buffer &buffer);
+
+    virtual std::string MetadataName(const std::string &name) const
+        noexcept = 0;
+
+    virtual std::string DataName(const std::string &name, const size_t id,
+                                   const bool hasSubStreams = false) const
+        noexcept = 0;
+
+    virtual std::string BaseName(const std::string &name) const noexcept = 0;
 
 private:
     /**

@@ -381,6 +381,46 @@ void BPBase::InsertBPString(const std::string &input, Buffer &buffer,
     buffer.Insert(position, input.c_str(), size);
 }
 
+std::vector<std::string>
+BPBase::MetadataNames(const std::vector<std::string> &names) const noexcept
+{
+    std::vector<std::string> out;
+    out.reserve(names.size());
+
+    for (const std::string &name : names)
+    {
+        out.push_back(MetadataName(name));
+    }
+    return out;
+}
+
+std::vector<std::string>
+BPBase::DataNames(const std::vector<std::string> &names, const size_t id,
+                  const bool hasSubStreams) const noexcept
+{
+    std::vector<std::string> out;
+    out.reserve(names.size());
+
+    for (const std::string &name : names)
+    {
+        out.push_back(DataName(name, id, hasSubStreams));
+    }
+    return out;
+}
+
+std::vector<std::string>
+BPBase::BaseNames(const std::vector<std::string> &names) const noexcept
+{
+    std::vector<std::string> out;
+    out.reserve(names.size());
+
+    for (const std::string &name : names)
+    {
+        out.push_back(BaseName(name));
+    }
+    return out;
+}
+
 void BPBase::InsertBPString(const std::string &input, Buffer &buffer)
 {
     const size_t size = input.size();

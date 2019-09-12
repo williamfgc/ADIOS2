@@ -333,5 +333,15 @@ std::string LowerCase(const std::string &input)
     return output;
 }
 
+std::string RemoveTrailingSeparator(const std::string &name)
+{
+    size_t length = name.size();
+    while (name[length - 1] == PathSeparator)
+    {
+        --length;
+    }
+    return name.substr(0, length);
+}
+
 } // end namespace helper
 } // end namespace adios2

@@ -173,6 +173,13 @@ size_t StringToByteUnits(const std::string &input, const bool debugMode,
  */
 std::string LowerCase(const std::string &input);
 
+/**
+ * Checks if trailing // or \\\\ exists in name and removes them
+ * @param name input
+ * @return substring without trailing separators
+ */
+std::string RemoveTrailingSeparator(const std::string &name);
+
 } // end namespace helper
 } // end namespace adios2
 
