@@ -45,6 +45,16 @@ public:
     void PutProcessGroupIndex(
         const std::string &ioName, const std::string hostLanguage,
         const std::vector<std::string> &transportsTypes) noexcept;
+
+    /**
+     * Serializes data buffer and close current process group
+     * @param io: attributes written in first step
+     * @param advanceStep true: advances step, false: doesn't advance
+     */
+    void SerializeData(core::IO &io, const bool advanceStep = false);
+
+private:
+    void SerializeDataBuffer(core::IO &io) noexcept;
 };
 
 } // end namespace format

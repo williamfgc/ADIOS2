@@ -108,5 +108,67 @@ void BPSerializer::PutProcessGroupIndex(
     m_Profiler.Stop("buffering");
 }
 
+void BPSerializer::SerializeData(core::IO &io, const bool advanceStep)
+{
+    m_Profiler.Start("buffering");
+    SerializeDataBuffer(io);
+    if (advanceStep)
+    {
+        ++m_MetadataSet.TimeStep;
+        ++m_MetadataSet.CurrentStep;
+    }
+    m_Profiler.Stop("buffering");
+}
+
+void BPSerializer::SerializeDataBuffer(core::IO &io) noexcept
+{
+    auto &buffer = m_Data.m_Buffer;
+    // auto &position = m_Data.m_Position;
+    auto &absolutePosition = m_Data.m_AbsolutePosition;
+
+    // vars count and Length (only for PG)
+    size_t position = m_MetadataSet.DataPGVarsCountPosition;
+    const uint32_t variablesCount = m_MetadataSet.DataPGVarsCount;
+    m_Data->Insert(position, variablesCount);
+
+    // without record itself and vars count
+    // Note: m_MetadataSet.DataPGVarsCount has been incremented by 4
+    // in previous CopyToBuffer operation!
+    const uint64_t variablesLength = static_cast<uint64_t>(
+        position - m_MetadataSet.DataPGVarsCountPosition - 8);
+    m_Data->Insert(position, variablesLength);
+
+    // each attribute is only written to output once
+    size_t attributesSizeInData = GetAttributesSizeInData(io);
+    if (attributesSizeInData)
+    {
+        attributesSizeInData += 12; // count + length + end ID
+        ResizeBuffer(position + attributesSizeInData + 4,
+                     "when writing Attributes in rank=0\n ");
+        PutAttributes(io);
+    }
+    else
+    {
+        ResizeBuffer(position + 12 + 4, "for empty Attributes\n");
+        // Attribute index header for zero attributes: 0, 0LL
+        // Resize() already takes care of this
+        position += 12;
+        absolutePosition += 12;
+    }
+
+    // write a block identifier PGI]
+    const char pgiend[] = "PGI]"; // no \0
+    helper::CopyToBuffer(buffer, position, pgiend, sizeof(pgiend) - 1);
+    absolutePosition += sizeof(pgiend) - 1;
+
+    // Finish writing pg group length INCLUDING the record itself and
+    // including the closing padding but NOT the opening [PGI
+    const uint64_t dataPGLength = position - m_MetadataSet.DataPGLengthPosition;
+    helper::CopyToBuffer(buffer, m_MetadataSet.DataPGLengthPosition,
+                         &dataPGLength);
+
+    m_MetadataSet.DataPGIsOpen = false;
+}
+
 } // end namespace format
 } // end namespace adios2

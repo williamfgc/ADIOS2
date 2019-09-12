@@ -8,8 +8,8 @@
  *      Author: William F Godoy godoywf@ornl.gov
  */
 
-#include "BP3Deserializer.h"
-#include "BP3Deserializer.tcc"
+#include "../bp/bp3/BP3Deserializer.h"
+#include "../bp/bp3/BP3Deserializer.tcc"
 
 #include <future>
 #include <unordered_set>

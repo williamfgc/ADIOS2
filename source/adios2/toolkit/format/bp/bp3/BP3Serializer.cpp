@@ -8,8 +8,8 @@
  *      Author: William F Godoy godoywf@ornl.gov
  */
 
-#include "BP3Serializer.h"
-#include "BP3Serializer.tcc"
+#include "../bp/bp3/BP3Serializer.h"
+#include "../bp/bp3/BP3Serializer.tcc"
 
 #include <chrono>
 #include <future>

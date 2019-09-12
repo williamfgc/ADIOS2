@@ -11,7 +11,7 @@
 #ifndef ADIOS2_TOOLKIT_FORMAT_BP3_BP3DESERIALIZER_TCC_
 #define ADIOS2_TOOLKIT_FORMAT_BP3_BP3DESERIALIZER_TCC_
 
-#include "BP3Deserializer.h"
+#include "../bp/bp3/BP3Deserializer.h"
 
 #include <algorithm> //std::reverse
 #include <unordered_set>

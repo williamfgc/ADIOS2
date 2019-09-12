@@ -11,7 +11,7 @@
 #ifndef ADIOS2_TOOLKIT_FORMAT_BP3_BP3SERIALIZER_TCC_
 #define ADIOS2_TOOLKIT_FORMAT_BP3_BP3SERIALIZER_TCC_
 
-#include "BP3Serializer.h"
+#include "../bp/bp3/BP3Serializer.h"
 
 #include <algorithm> // std::all_of, std::fill_n
 

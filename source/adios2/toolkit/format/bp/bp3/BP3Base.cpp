@@ -16,7 +16,60 @@ namespace adios2
 {
 namespace format
 {
+
+// PUBLIC
+size_t BP3Base::GetBPIndexSizeInData(const std::string &variableName,
+                                     const Dims &count) const noexcept
+{
+    size_t indexSize = 23; // header
+    indexSize += variableName.size();
+
+    // characteristics 3 and 4, check variable number of dimensions
+    const size_t dimensions = count.size();
+    indexSize += 28 * dimensions; // 28 bytes per dimension
+    indexSize += 1;               // id
+
+    // characteristics, offset + payload offset in data
+    indexSize += 2 * (1 + 8);
+    // characteristic 0, if scalar add value, for now only allowing string
+    if (dimensions == 1)
+    {
+        indexSize += 2 * sizeof(uint64_t); // complex largest size
+        indexSize += 1;                    // id
+        indexSize += 1;                    // id
+    }
+
+    // characteristic statistics
+    indexSize += 5; // count + length
+    // default, only min and max and dimensions
+    if (m_Parameters.StatsLevel > 0)
+    {
+        indexSize += 2 * (2 * sizeof(uint64_t) + 1);
+        indexSize += 1 + 1; // id
+
+        indexSize += 28 * dimensions + 1;
+    }
+
+    return indexSize + 12; // extra 12 bytes in case of attributes
+}
+
 // PRIVATE
+BP3Base::ElementIndexHeader
+BP3Base::ReadElementIndexHeader(const Buffer &buffer, size_t &position,
+                                const bool isLittleEndian) const noexcept
+{
+    ElementIndexHeader header;
+    header.Length = buffer.Read<uint32_t>(position, isLittleEndian);
+    header.MemberID = buffer.Read<uint32_t>(position, isLittleEndian);
+    header.GroupName = ReadBPString(buffer, position, isLittleEndian);
+    header.Name = ReadBPString(buffer, position, isLittleEndian);
+    header.Path = ReadBPString(buffer, position, isLittleEndian);
+    header.DataType = buffer.Read<int8_t>(position, isLittleEndian);
+    header.CharacteristicsSetsCount =
+        buffer.Read<uint64_t>(position, isLittleEndian);
+    return header;
+}
+
 std::string BP3Base::MetadataName(const std::string &name) const noexcept
 {
     return helper::AddExtension(name, ".bp");

@@ -569,6 +569,15 @@ protected:
                                     const size_t transportsSize) const noexcept;
 
     /**
+     * Returns the estimated variable index size. Used by ResizeBuffer public
+     * function
+     * @param variableName input
+     * @param count input variable local dimensions
+     */
+    virtual size_t GetBPIndexSizeInData(const std::string &variableName,
+                                        const Dims &count) const noexcept = 0;
+
+    /**
      * Reads a PG index from a buffer position and advances the position until
      * done
      * @param buffer input buffer
@@ -589,11 +598,9 @@ protected:
      * @param isLittleEndian true: buffer is little endian, false: big endian
      * @return populated PGIndex struct
      */
-    //    ElementIndexHeader
-    //    ReadElementIndexHeader(const std::vector<char> &buffer, size_t
-    //    &position,
-    //                           const bool isLittleEndian = true) const
-    //                           noexcept;
+    virtual ElementIndexHeader
+    ReadElementIndexHeader(const Buffer &buffer, size_t &position,
+                           const bool isLittleEndian = true) const noexcept = 0;
 
     /**
      * Read variable element (block) characteristics from a buffer position and
@@ -644,7 +651,7 @@ protected:
         noexcept = 0;
 
     virtual std::string DataName(const std::string &name, const size_t id,
-                                   const bool hasSubStreams = false) const
+                                 const bool hasSubStreams = false) const
         noexcept = 0;
 
     virtual std::string BaseName(const std::string &name) const noexcept = 0;

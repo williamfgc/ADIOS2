@@ -25,11 +25,19 @@ public:
 
     virtual ~BP3Base() = default;
 
+    size_t GetBPIndexSizeInData(const std::string &variableName,
+                                const Dims &count) const noexcept final;
+
 private:
+    ElementIndexHeader
+    ReadElementIndexHeader(const Buffer &buffer, size_t &position,
+                           const bool isLittleEndian = true) const
+        noexcept final;
+
     std::string MetadataName(const std::string &name) const noexcept final;
 
     std::string DataName(const std::string &name, const size_t id,
-                           const bool hasSubStreams) const noexcept final;
+                         const bool hasSubStreams) const noexcept final;
 
     std::string BaseName(const std::string &name) const noexcept final;
 };

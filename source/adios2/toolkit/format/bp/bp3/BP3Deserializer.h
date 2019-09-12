@@ -8,8 +8,8 @@
  *      Author: William F Godoy godoywf@ornl.gov
  */
 
-#ifndef ADIOS2_TOOLKIT_FORMAT_BP3_BP3DESERIALIZER_H_
-#define ADIOS2_TOOLKIT_FORMAT_BP3_BP3DESERIALIZER_H_
+#ifndef ADIOS2_TOOLKIT_FORMAT_BP_BP3_BP3DESERIALIZER_H_
+#define ADIOS2_TOOLKIT_FORMAT_BP_BP3_BP3DESERIALIZER_H_
 
 #include <mutex>
 #include <set>
@@ -282,4 +282,4 @@ ADIOS2_FOREACH_STDTYPE_1ARG(declare_template_instantiation)
 } // end namespace format
 } // end namespace adios2
 
-#endif /* ADIOS2_TOOLKIT_FORMAT_BP3_BP3DESERIALIZER_H_ */
+#endif /* ADIOS2_TOOLKIT_FORMAT_BP_BP3_BP3DESERIALIZER_H_ */
