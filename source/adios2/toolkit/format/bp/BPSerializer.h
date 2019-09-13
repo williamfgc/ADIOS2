@@ -55,6 +55,30 @@ public:
 
 private:
     void SerializeDataBuffer(core::IO &io) noexcept;
+
+    void PutAttributes(core::IO &io);
+
+    template <class T>
+    void PutAttributeInData(const core::Attribute<T> &attribute,
+                            Stats<T> &stats) noexcept;
+
+    template <class T>
+    void PutAttributeInIndex(const core::Attribute<T> &attribute,
+                             const Stats<T> &stats) noexcept;
+
+    template <class T>
+    void InsertAttributeValues(const core::Attribute<T> &attribute,
+                               Buffer &buffer) noexcept;
+
+    // Record functions
+    void PutRecordDimensions(const Dims &shape, const Dims &start,
+                             const Dims &count, Buffer &buffer) noexcept;
+
+    template <class T>
+    void PutRecordCharacteristic(const uint8_t id, uint8_t &counter,
+                                 const T &value, Buffer &buffer) noexcept;
+
+    uint32_t DataID() const noexcept;
 };
 
 } // end namespace format

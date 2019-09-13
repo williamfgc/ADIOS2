@@ -8,8 +8,8 @@
  *      Author: William F Godoy godoywf@ornl.gov
  */
 
-#include "../bp/bp3/BP3Serializer.h"
-#include "../bp/bp3/BP3Serializer.tcc"
+#include "BP3Serializer.h"
+#include "BP3Serializer.tcc"
 
 #include <chrono>
 #include <future>
@@ -42,7 +42,7 @@ void BP3Serializer::PutProcessGroupIndex(
     m_Profiler.Start("buffering");
     std::vector<char> &metadataBuffer = m_MetadataSet.PGIndex.Buffer;
     std::vector<char> &dataBuffer = m_Data.m_Buffer;
-    size_t &dataPosition = m_Data.m_Position;
+    size_t &dataPosition = m_Data->Position();
 
     m_MetadataSet.DataPGLengthPosition = dataPosition;
     dataPosition += 8; // skip pg length (8)

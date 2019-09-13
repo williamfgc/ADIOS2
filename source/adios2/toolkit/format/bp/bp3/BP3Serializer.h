@@ -15,7 +15,7 @@
 
 #include "adios2/core/Attribute.h"
 #include "adios2/core/IO.h"
-#include "adios2/toolkit/format/bp3/BP3Base.h"
+#include "adios2/toolkit/format/bp/bp3/BP3Base.h"
 
 namespace adios2
 {

@@ -122,10 +122,6 @@ void BPSerializer::SerializeData(core::IO &io, const bool advanceStep)
 
 void BPSerializer::SerializeDataBuffer(core::IO &io) noexcept
 {
-    auto &buffer = m_Data.m_Buffer;
-    // auto &position = m_Data.m_Position;
-    auto &absolutePosition = m_Data.m_AbsolutePosition;
-
     // vars count and Length (only for PG)
     size_t position = m_MetadataSet.DataPGVarsCountPosition;
     const uint32_t variablesCount = m_MetadataSet.DataPGVarsCount;
@@ -143,31 +139,115 @@ void BPSerializer::SerializeDataBuffer(core::IO &io) noexcept
     if (attributesSizeInData)
     {
         attributesSizeInData += 12; // count + length + end ID
-        ResizeBuffer(position + attributesSizeInData + 4,
-                     "when writing Attributes in rank=0\n ");
+        m_Data->Reserve(m_Data->Position() + attributesSizeInData + 4,
+                        "when writing Attributes");
         PutAttributes(io);
     }
     else
     {
-        ResizeBuffer(position + 12 + 4, "for empty Attributes\n");
-        // Attribute index header for zero attributes: 0, 0LL
-        // Resize() already takes care of this
-        position += 12;
-        absolutePosition += 12;
+        m_Data->Reserve(m_Data->Position() + 12 + 4,
+                        "when reserving for empty Attributes");
+        m_Data->Insert('\0', 12);
     }
 
     // write a block identifier PGI]
-    const char pgiend[] = "PGI]"; // no \0
-    helper::CopyToBuffer(buffer, position, pgiend, sizeof(pgiend) - 1);
-    absolutePosition += sizeof(pgiend) - 1;
+    const std::string pgIndexEnd = "PGI]";
+    m_Data->Insert(pgIndexEnd.c_str(), pgIndexEnd.size());
 
     // Finish writing pg group length INCLUDING the record itself and
     // including the closing padding but NOT the opening [PGI
     const uint64_t dataPGLength = position - m_MetadataSet.DataPGLengthPosition;
-    helper::CopyToBuffer(buffer, m_MetadataSet.DataPGLengthPosition,
-                         &dataPGLength);
-
+    m_Data->Insert(m_MetadataSet.DataPGLengthPosition, dataPGLength);
     m_MetadataSet.DataPGIsOpen = false;
+}
+
+void BPSerializer::PutAttributes(core::IO &io)
+{
+    const auto &attributesDataMap = io.GetAttributesDataMap();
+    const size_t attributesCountPosition = m_Data->Position();
+
+    // count is known ahead of time
+    const uint32_t attributesCount =
+        static_cast<uint32_t>(attributesDataMap.size());
+    m_Data->Insert(attributesCount);
+
+    // will go back
+    const size_t attributesLengthPosition = m_Data->Position();
+    m_Data->Insert('\0', 8); // skip attributes length
+
+    // absolutePosition += position - attributesCountPosition;
+
+    uint32_t memberID = 0;
+
+    for (const auto &attributePair : attributesDataMap)
+    {
+        const std::string name = attributePair.first;
+        const std::string type = attributePair.second.first;
+
+        // each attribute is only written to output once
+        // so filter out the ones already written
+        auto it = m_SerializedAttributes.find(name);
+        if (it != m_SerializedAttributes.end())
+        {
+            continue;
+        }
+
+        if (type == "unknown")
+        {
+        }
+#define declare_type(T)                                                        \
+    else if (type == helper::GetType<T>())                                     \
+    {                                                                          \
+        Stats<T> stats;                                                        \
+        stats.Offset = m_Data->AbsolutePosition();                             \
+        stats.MemberID = memberID;                                             \
+        stats.Step = m_MetadataSet.TimeStep;                                   \
+        stats.FileIndex = DataID();                                            \
+        core::Attribute<T> &attribute = *io.InquireAttribute<T>(name);         \
+        PutAttributeInData(attribute, stats);                                  \
+        PutAttributeInIndex(attribute, stats);                                 \
+    }
+        ADIOS2_FOREACH_ATTRIBUTE_STDTYPE_1ARG(declare_type)
+#undef declare_type
+
+        ++memberID;
+    }
+
+    // complete attributes length
+    const uint64_t attributesLength =
+        static_cast<uint64_t>(m_Data->Position() - attributesLengthPosition);
+
+    size_t backPosition = attributesLengthPosition;
+    m_Data->Insert(backPosition, attributesLength);
+}
+
+uint32_t BPSerializer::DataID() const noexcept
+{
+    const uint32_t dataID =
+        m_Aggregator.m_IsActive
+            ? static_cast<uint32_t>(m_Aggregator.m_SubStreamIndex)
+            : static_cast<uint32_t>(m_RankMPI);
+
+    return dataID;
+}
+
+void BPSerializer::PutRecordDimensions(const Dims &shape, const Dims &start,
+                                       const Dims &count,
+                                       Buffer &buffer) noexcept
+{
+    for (size_t d = 0; d < count.size(); ++d)
+    {
+        const uint64_t countRecord = static_cast<uint64_t>(count[d]);
+        const uint64_t shapeRecord =
+            shape.empty() ? 0 : static_cast<uint64_t>(shape[d]);
+        const uint64_t startRecord =
+            start.empty() ? 0 : static_cast<uint64_t>(start[d]);
+
+        // TODO check adios1 compatibility
+        buffer.Insert(countRecord);
+        buffer.Insert(shapeRecord);
+        buffer.Insert(startRecord);
+    }
 }
 
 } // end namespace format
