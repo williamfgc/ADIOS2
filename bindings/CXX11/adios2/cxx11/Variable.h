@@ -13,6 +13,8 @@
 
 #include "Operator.h"
 
+#include <set>
+
 #include "adios2/common/ADIOSTypes.h"
 
 namespace adios2
@@ -259,6 +261,12 @@ public:
      * @return available start step
      */
     size_t StepsStart() const;
+
+    /**
+     * For read mode, inspect the absolute available steps
+     * @return ordered available steps
+     */
+    std::set<size_t> AvailableSteps() const;
 
     /**
      * For read mode, retrieve current BlockID, default = 0 if not set with

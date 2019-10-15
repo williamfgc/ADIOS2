@@ -106,6 +106,7 @@ public:
      * </pre>
      * */
     std::map<size_t, std::vector<size_t>> m_AvailableStepBlockIndexOffsets;
+    std::map<size_t, std::vector<size_t>>::const_iterator m_ItAvailableStep;
 
     std::map<size_t, Dims> m_AvailableShapes;
 
@@ -189,8 +190,11 @@ public:
 
     /**
      * Resets m_StepsStart and m_StepsCount. Must be called in BeginStep
+     * @param zeroStart: if it always start at zero
+     * @param oneIndex true: indexing starts at 1
      */
-    void ResetStepsSelection(const bool zeroStart) noexcept;
+    void ResetStepsSelection(const bool zeroStart,
+                             const bool oneIndex = false) noexcept;
 
     /**
      * Checks if variable has a conflict to be accessed as a stream and

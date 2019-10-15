@@ -59,23 +59,17 @@ BP3Deserializer::InitVariableBlockInfo(core::Variable<T> &variable,
     if (m_DebugMode)
     {
         const auto &indices = variable.m_AvailableStepBlockIndexOffsets;
-        const size_t maxStep = indices.rbegin()->first;
-        if (stepsStart + 1 > maxStep)
-        {
-            throw std::invalid_argument(
-                "ERROR: steps start " + std::to_string(stepsStart) +
-                " from SetStepsSelection or BeginStep is larger than "
-                "the maximum available step " +
-                std::to_string(maxStep - 1) + " for variable " +
-                variable.m_Name + ", in call to Get\n");
-        }
-
-        auto itStep = std::next(indices.begin(), stepsStart);
+        // relative fails for non-zero start
+        // auto itStep = std::next(indices.begin(), stepsStart);
+        // absolute fails for streaming...
+        // indices.find(stepsStart + 1);
+        auto itStep = variable.m_ItAvailableStep->first;
 
         for (size_t i = 0; i < stepsCount; ++i)
         {
             if (itStep == indices.end())
             {
+                const size_t maxStep = indices.rbegin()->first;
                 throw std::invalid_argument(
                     "ERROR: offset " + std::to_string(i) +
                     " from steps start " + std::to_string(stepsStart) +

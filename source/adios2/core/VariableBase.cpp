@@ -203,16 +203,53 @@ size_t VariableBase::GetAvailableStepsCount() const
 
 void VariableBase::SetStepSelection(const Box<size_t> &boxSteps)
 {
+    m_RandomAccess = true;
+
     if (m_DebugMode && boxSteps.second == 0)
     {
-        throw std::invalid_argument("ERROR: boxSteps.second count argument "
+        throw std::invalid_argument("ERROR: second argument for steps count"
                                     " can't be zero, from variable " +
                                     m_Name + ", in call to SetStepSelection\n");
     }
 
+    const auto &indices = m_AvailableStepBlockIndexOffsets;
+    m_ItAvailableStep = indices.find(boxSteps.first);
+
+    if (m_DebugMode)
+    {
+        if (boxSteps.second == 0)
+        {
+            throw std::invalid_argument("ERROR: second argument for steps count"
+                                        " can't be zero, from variable " +
+                                        m_Name +
+                                        ", in call to SetStepSelection\n");
+        }
+
+        // relative fails for non-zero start
+        // auto itStep = std::next(indices.begin(), stepsStart);
+        // absolute fails for streaming...
+        // indices.find(stepsStart + 1);
+
+        auto itStep = m_ItAvailableStep;
+
+        for (size_t i = 0; i < boxSteps.second; ++i)
+        {
+            if (itStep == indices.end())
+            {
+                throw std::invalid_argument(
+                    "ERROR: offset " + std::to_string(i) +
+                    " from steps start " +
+                    std::to_string(m_ItAvailableStep->first) + " in variable " +
+                    m_Name + " is beyond the largest available step = " +
+                    std::to_string(indices.rbegin()->first - 1) +
+                    ", in call to Variable::SetStepSelection\n");
+            }
+            ++itStep;
+        }
+    }
+
     m_StepsStart = boxSteps.first;
     m_StepsCount = boxSteps.second;
-    m_RandomAccess = true;
 }
 
 size_t VariableBase::AddOperation(Operator &op,
@@ -281,25 +318,29 @@ void VariableBase::CheckRandomAccessConflict(const std::string hint) const
     }
 }
 
-void VariableBase::ResetStepsSelection(const bool zeroStart) noexcept
+void VariableBase::ResetStepsSelection(const bool zeroStart,
+                                       const bool oneStart) noexcept
 {
-    m_StepsCount = 1;
-
     if (zeroStart)
     {
-        m_StepsStart = 0;
-        return;
-    }
-
-    if (m_FirstStreamingStep)
-    {
-        m_StepsStart = 0;
-        m_FirstStreamingStep = false;
+        m_ItAvailableStep = m_AvailableStepBlockIndexOffsets.begin();
     }
     else
     {
-        ++m_StepsStart;
+        if (m_FirstStreamingStep)
+        {
+            m_ItAvailableStep = m_AvailableStepBlockIndexOffsets.begin();
+            m_FirstStreamingStep = false;
+        }
+        else
+        {
+            ++m_ItAvailableStep;
+        }
     }
+
+    m_StepsCount = 1;
+    m_StepsStart =
+        oneStart ? m_ItAvailableStep->first - 1 : m_ItAvailableStep->first;
 }
 
 std::map<std::string, Params>
