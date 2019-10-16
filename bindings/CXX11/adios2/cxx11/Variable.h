@@ -191,11 +191,36 @@ public:
     void SetMemorySelection(const adios2::Box<adios2::Dims> &memorySelection);
 
     /**
+     *
+     * @return
+     */
+    std::set<size_t> AvailableSteps() const;
+
+    class step_iterator
+    {
+    public:
+        step_iterator(std::map<size_t, std::vector<size_t>>::const_iterator it)
+        : m_Iterator(it)
+        {
+        }
+
+    private:
+        std::map<size_t, std::vector<size_t>>::const_iterator m_Iterator;
+    };
+
+    step_iterator sbegin() const;
+    step_iterator send() const;
+
+    /**
      * Sets a step selection modifying current startStep, countStep
      * countStep is the number of steps from startStep point
      * @param stepSelection input {startStep, countStep}
      */
-    void SetStepSelection(const adios2::Box<size_t> &stepSelection);
+    void SetStepSelection(const adios2::Box<size_t> &stepSelection,
+                          const size_t stride = 1);
+
+    void SetStepSelection(step_iterator first, step_iterator last,
+                          const size_t stride = 1);
 
     /**
      * Returns the number of elements required for pre-allocation based on
@@ -372,8 +397,7 @@ public:
     /**
      * Read mode only and random-access (no BeginStep/EndStep) with file engines
      * only. Allows inspection of variable info on a per relative step (returned
-     * vector index)
-     * basis
+     * vector index) basis
      * @return first vector: relative steps, second vector: blocks info within a
      * step
      */

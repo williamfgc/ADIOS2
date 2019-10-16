@@ -64,7 +64,8 @@ namespace adios2
     }                                                                          \
                                                                                \
     template <>                                                                \
-    void Variable<T>::SetStepSelection(const Box<size_t> &stepSelection)       \
+    void Variable<T>::SetStepSelection(const Box<size_t> &stepSelection,       \
+                                       const size_t stride)                    \
     {                                                                          \
         helper::CheckForNullptr(m_Variable,                                    \
                                 "in call to Variable<T>::SetStepSelection");   \
