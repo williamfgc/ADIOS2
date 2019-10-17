@@ -98,6 +98,8 @@ public:
 
     Engine *m_Engine = nullptr;
 
+    using StepsMap = std::map<size_t, std::vector<size_t>>;
+
     /** Index to Step and blocks' (inside a step) characteristics position in a
      * serial metadata buffer
      * <pre>
@@ -105,8 +107,17 @@ public:
      * value:  vector of block starts for that step
      * </pre>
      * */
-    std::map<size_t, std::vector<size_t>> m_AvailableStepBlockIndexOffsets;
-    std::map<size_t, std::vector<size_t>>::const_iterator m_ItAvailableStep;
+    StepsMap m_AvailableStepBlockIndexOffsets;
+    StepsMap::const_iterator m_ItAvailableStep;
+
+    class step_iterator : public StepsMap::const_iterator
+    {
+    public:
+        step_iterator();
+        step_iterator(StepsMap::const_iterator it);
+        size_t *const operator->() const noexcept;
+        size_t operator*() const noexcept;
+    };
 
     std::map<size_t, Dims> m_AvailableShapes;
 

@@ -17,6 +17,25 @@
 namespace adios2
 {
 
+namespace detail
+{
+
+Steps::iterator() : ItSteps() {}
+
+Steps::iterator(ItSteps it) : ItSteps(it) {}
+
+size_t *const Steps::iterator::operator->() const noexcept
+{
+    return reinterpret_cast<size_t *const>(&(ItSteps::operator->()->first));
+}
+
+size_t Steps::iterator::operator*() const noexcept
+{
+    return ItSteps::operator*().first;
+}
+
+} // end namespace detail
+
 #define declare_type(T)                                                        \
                                                                                \
     template <>                                                                \

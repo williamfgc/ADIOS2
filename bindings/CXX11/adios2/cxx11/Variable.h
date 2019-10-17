@@ -13,6 +13,7 @@
 
 #include "Operator.h"
 
+#include <memory>
 #include <set>
 
 #include "adios2/common/ADIOSTypes.h"
@@ -124,6 +125,28 @@ private:
     CoreSpan *m_Span = nullptr;
 };
 
+class Steps
+{
+public:
+    using StepsMap = std::map<size_t, std::vector<size_t>>;
+    using ItSteps = StepsMap::const_iterator;
+
+    Steps(const StepsMap &m_StepsMap);
+    ~Steps() = default;
+
+    class iterator : public ItSteps
+    {
+    public:
+        iterator();
+        iterator(ItSteps it);
+        size_t *const operator->() const noexcept;
+        size_t operator*() const noexcept;
+    };
+
+private:
+    const StepsMap &m_StepsMap;
+};
+
 } // end namespace detail
 
 template <class T>
@@ -189,27 +212,6 @@ public:
      * </pre>
      */
     void SetMemorySelection(const adios2::Box<adios2::Dims> &memorySelection);
-
-    /**
-     *
-     * @return
-     */
-    std::set<size_t> AvailableSteps() const;
-
-    class step_iterator
-    {
-    public:
-        step_iterator(std::map<size_t, std::vector<size_t>>::const_iterator it)
-        : m_Iterator(it)
-        {
-        }
-
-    private:
-        std::map<size_t, std::vector<size_t>>::const_iterator m_Iterator;
-    };
-
-    step_iterator sbegin() const;
-    step_iterator send() const;
 
     /**
      * Sets a step selection modifying current startStep, countStep
