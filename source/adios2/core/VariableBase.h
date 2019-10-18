@@ -110,15 +110,6 @@ public:
     StepsMap m_AvailableStepBlockIndexOffsets;
     StepsMap::const_iterator m_ItAvailableStep;
 
-    class step_iterator : public StepsMap::const_iterator
-    {
-    public:
-        step_iterator();
-        step_iterator(StepsMap::const_iterator it);
-        size_t *const operator->() const noexcept;
-        size_t operator*() const noexcept;
-    };
-
     std::map<size_t, Dims> m_AvailableShapes;
 
     std::set<std::string> m_PrefixedVariables;

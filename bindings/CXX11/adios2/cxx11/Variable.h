@@ -125,25 +125,44 @@ private:
     CoreSpan *m_Span = nullptr;
 };
 
-class Steps
+class StepsSet
 {
 public:
     using StepsMap = std::map<size_t, std::vector<size_t>>;
     using ItSteps = StepsMap::const_iterator;
+    friend class adios2::Variable;
 
-    Steps(const StepsMap &m_StepsMap);
-    ~Steps() = default;
+    StepsSet() = delete;
+    StepsSet(StepsSet &) = delete;
+    StepsSet(StepsSet &&) = default;
+    ~StepsSet() = default;
 
-    class iterator : public ItSteps
+    /** StepsSet can't be copied */
+    StepsSet &operator=(const StepsSet &) = delete;
+    /** StepsSet can only be moved */
+    StepsSet &operator=(StepsSet &&) = default;
+
+    class const_iterator : public ItSteps
     {
     public:
-        iterator();
-        iterator(ItSteps it);
+        const_iterator();
+        const_iterator(ItSteps it);
         size_t *const operator->() const noexcept;
         size_t operator*() const noexcept;
     };
 
+    const_iterator begin() const noexcept;
+    const_iterator end() const noexcept;
+    const_iterator rbegin() const noexcept;
+    const_iterator rend() const noexcept;
+
+    const_iterator find(const size_t step) const noexcept;
+    bool empty() const noexcept;
+    StepsMap::size_type size() const noexcept;
+    StepsMap::size_type count(const size_t step) const noexcept;
+
 private:
+    StepsSet(const StepsMap &m_StepsMap);
     const StepsMap &m_StepsMap;
 };
 
@@ -221,7 +240,10 @@ public:
     void SetStepSelection(const adios2::Box<size_t> &stepSelection,
                           const size_t stride = 1);
 
-    void SetStepSelection(step_iterator first, step_iterator last,
+    using StepsSet = adios2::detail::StepsSet;
+
+    void SetStepSelection(StepsSet::const_iterator first,
+                          StepsSet::const_iterator last,
                           const size_t stride = 1);
 
     /**
@@ -293,7 +315,7 @@ public:
      * For read mode, inspect the absolute available steps
      * @return ordered available steps
      */
-    std::set<size_t> AvailableSteps() const;
+    StepsSet AvailableSteps() const;
 
     /**
      * For read mode, retrieve current BlockID, default = 0 if not set with

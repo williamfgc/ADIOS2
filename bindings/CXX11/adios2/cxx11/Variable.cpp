@@ -20,18 +20,49 @@ namespace adios2
 namespace detail
 {
 
-Steps::iterator() : ItSteps() {}
+Steps::const_iterator() : ItSteps() {}
 
-Steps::iterator(ItSteps it) : ItSteps(it) {}
+Steps::const_iterator(ItSteps it) : ItSteps(it) {}
 
-size_t *const Steps::iterator::operator->() const noexcept
+size_t *const Steps::const_iterator::operator->() const noexcept
 {
     return reinterpret_cast<size_t *const>(&(ItSteps::operator->()->first));
 }
 
-size_t Steps::iterator::operator*() const noexcept
+size_t Steps::const_iterator::operator*() const noexcept
 {
     return ItSteps::operator*().first;
+}
+
+Steps::const_iterator Steps::begin() const noexcept
+{
+    return m_StepsMap.begin();
+}
+
+Steps::const_iterator Steps::end() const noexcept { return m_StepsMap.end(); }
+
+Steps::const_iterator Steps::rbegin() const noexcept
+{
+    return m_StepsMap.rbegin();
+}
+
+Steps::const_iterator Steps::rend() const noexcept { return m_StepsMap.rend(); }
+
+Steps::const_iterator Steps::find(const size_t step) const noexcept
+{
+    return m_StepsMap.find(step);
+}
+
+bool Steps::empty() const noexcept { return m_StepsMap.empty(); }
+
+Steps::StepsMap::size_type Steps::size() const noexcept
+{
+    return m_StepsMap.size();
+}
+
+Steps::StepsMap::size_type Steps::count(const size_t step) const noexcept
+{
+    return m_StepsMap.count(step);
 }
 
 } // end namespace detail
