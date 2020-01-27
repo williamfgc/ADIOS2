@@ -4,35 +4,43 @@ package:
   #version: {{ GIT_DESCRIBE_TAG }}
 
 build:
-  number: {{ GIT_DESCRIBE_NUMBER }}
-  string: {{ GIT_BUILD_STR }}
+  number: 1
+  # back to 0 for every new version
+  string: full
 
 source:
   git_url: https://github.com/ornladios/adios2.git
   git_rev: release_25
+  git_depth: 1
 
 requirements:
   build:
     - python
     - openmpi
     - mpi4py
-    - numpy
+    - numpy=1.15
     - cmake
     - zeromq
     - libffi
     - bzip2
     - libpng
     - blosc
+    - sz
+    - zfpy 
+    - hdf5=1.10.6=mpi_openmpi_hac320be_0
   run:
     - python
     - openmpi
     - mpi4py
-    - numpy
+    - numpy=1.15
     - zeromq
     - libffi
     - bzip2
     - libpng
     - blosc
+    - sz
+    - zfpy
+    - hdf5=1.10.6=mpi_openmpi_hac320be_0
 
 test:
   imports:
@@ -42,5 +50,8 @@ about:
   home: https://github.com/ornladios/adios2
   license: Apache2
   license_file: LICENSE
+  doc_url: https://adios2.readthedocs.io
+  description: "ADIOS2, The Adaptable Input Output System version 2"
+
   
-# build:  conda build -c conda-forge .
+# build:  conda build -c conda-forge -c williamfgc .
