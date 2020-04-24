@@ -1,5 +1,11 @@
 message_start_thirdparty()
 
-add_subdirectory(pugixml)
+if(NOT ADIOS2_USE_EXTERNAL_PUGIXML)
+  add_subdirectory(pugixml)
+else()
+  # Need a FindPugiXML.cmake, defective on Ubuntu 18
+  find_package(pugixml REQUIRED)
+  message("    Using External pugixml package")
+endif()
 
 message_end_thirdparty()
