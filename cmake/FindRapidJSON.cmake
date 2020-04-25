@@ -14,7 +14,7 @@
 #   RapidJSON_INCLUDE_DIRS - The RapidJSON include directory
 #
 # and the following imported targets:
-#   RapidJSON::RapidJSON - The RapidJSON compression library target
+#   RapidJSON::RapidJSON - The RapidJSON library target
 #
 # You can also set the following variable to help guide the search:
 #   RapidJSON_ROOT - The install prefix for RapidJSON containing the

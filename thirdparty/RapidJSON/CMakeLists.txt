@@ -1,6 +1,5 @@
 message_start_thirdparty()
 
-
 if(NOT ADIOS2_USE_EXTERNAL_RAPIDJSON)
   add_library(RapidJSON INTERFACE)
   target_include_directories(RapidJSON INTERFACE
