@@ -45,15 +45,14 @@ if(NOT pugixml_FOUND)
     FOUND_VAR pugixml_FOUND
     REQUIRED_VARS pugixml_LIBRARY pugixml_INCLUDE_DIR
   )
-  if(pugixml_FOUND)
-    set(pugixml_INCLUDE_DIRS ${pugixml_INCLUDE_DIR})
-    set(pugixml_LIBRARIES ${pugixml_LIBRARY})
-    if(pugixml_FOUND AND NOT TARGET pugixml::pugixml)
-      add_library(pugixml::pugixml UNKNOWN IMPORTED)
-      set_target_properties(pugixml::pugixml PROPERTIES
-        IMPORTED_LOCATION             "${pugixml_LIBRARY}"
-        INTERFACE_INCLUDE_DIRECTORIES "${pugixml_INCLUDE_DIR}"
-      )
-    endif()
+  
+  if(pugixml_FOUND AND NOT TARGET pugixml::pugixml)
+    add_library(pugixml::pugixml UNKNOWN IMPORTED)
+    set_target_properties(pugixml::pugixml PROPERTIES
+      IMPORTED_LOCATION             "${pugixml_LIBRARY}"
+      INTERFACE_INCLUDE_DIRECTORIES "${pugixml_INCLUDE_DIR}"
+    )
+    message("PUGI FOUND: ${pugixml_LIBRARY} ${pugixml_INCLUDE_DIR}")
   endif()
+
 endif()

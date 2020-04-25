@@ -122,7 +122,7 @@ target_link_libraries(adios2_core PRIVATE adios2sys_interface taustubs yaml-cpp)
 if(NOT ADIOS2_USE_EXTERNAL_PUGIXML)
   target_link_libraries(adios2_core PRIVATE pugixml_private)
 else()
-  target_link_libraries(adios2_core PRIVATE pugixml)
+  target_link_libraries(adios2_core PRIVATE pugixml::pugixml)
 endif()
 
 target_link_libraries(adios2_core PUBLIC ${CMAKE_THREAD_LIBS_INIT})
