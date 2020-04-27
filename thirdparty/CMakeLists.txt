@@ -30,7 +30,10 @@ if(ADIOS2_HAVE_Python)
   add_subdirectory(pybind11)
 endif()
 
-add_subdirectory(pugixml)
+if(NOT ADIOS2_USE_EXTERNAL_pugixml)
+  add_subdirectory(pugixml)
+endif()
+
 add_subdirectory(nlohmann_json)
 add_subdirectory(RapidJSON)
 add_subdirectory(yaml-cpp)

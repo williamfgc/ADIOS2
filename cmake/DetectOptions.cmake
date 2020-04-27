@@ -337,5 +337,15 @@ if(ADIOS2_USE_Endian_Reverse STREQUAL ON)
   set(ADIOS2_HAVE_Endian_Reverse TRUE)
 endif()
 
+# EXTERNAL_pugixml
+if(ADIOS2_USE_EXTERNAL_pugixml STREQUAL ON)
+  # needs MODULE, se bug https://bugs.launchpad.net/ubuntu/+source/pugixml/+bug/1799660
+  find_package(pugixml REQUIRED MODULE)
+  set(ADIOS2_HAVE_EXTERNAL_pugixml TRUE)
+else()
+  set(ADIOS2_USE_EXTERNAL_pugixml OFF)
+endif()
+
+
 # Multithreading
 find_package(Threads REQUIRED)
